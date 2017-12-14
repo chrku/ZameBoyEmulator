@@ -20,7 +20,7 @@
 // Register-immediate loads/////////////////////////////////////////////////////
 //
 // Cycle count for these loads
-#define LD_CYCLE_COUNT_REGISTER_IMMEDIATE 8
+#define LD_CYCLE_COUNT_REGISTER_IMMEDIATE_8 8
 
 #define LD_B_d8 0x06
 #define LD_D_d8 0x16
@@ -28,7 +28,7 @@
 #define LD_C_d8 0x0e
 #define LD_E_d8 0x1e
 #define LD_L_d8 0x2e
-#define LD_H_d8 0x3e
+#define LD_A_d8 0x3e
 
 ////////////////////////////////////////////////////////////////////////////////
 

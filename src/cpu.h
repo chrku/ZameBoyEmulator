@@ -46,5 +46,7 @@ extern uint8_t RAM[GB_RAM_SIZE];
 // VRAM
 extern uint8_t VRAM[GB_VRAM_SIZE];
 
+// Sleep for n cycles
+void sleepCycles(size_t n);
 
 #endif // CPU_H
