@@ -18,6 +18,7 @@ typedef enum _Instructions_
   LD, ADD
 } Instruction;
 
+// Instruction data
 typedef struct _InstructionData_ 
 {
   Instruction instruction; //
@@ -25,5 +26,11 @@ typedef struct _InstructionData_
   Register reg2;
   uint8_t immediateValue1;
 } InstructionData;
+
+/// Decode instruction
+/// @param instruction opcode
+/// @param data struct to be filled
+/// @return int error code
+int decodeInstruction(uint8_t instruction, InstructionData* data);
 
 #endif //DECODE_H
