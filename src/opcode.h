@@ -21,6 +21,7 @@
 //
 // Cycle count for these loads
 #define LD_CYCLE_COUNT_REGISTER_IMMEDIATE_8 8
+#define LD_REGISTER_IMMEDIATE_LEN 2
 
 #define LD_B_d8 0x06
 #define LD_D_d8 0x16

@@ -33,5 +33,5 @@ void do_load_8bit_immediate(uint8_t instruction)
       break;
   }
   *reg = immediate;
-  pc += 2;
+  pc += LD_REGISTER_IMMEDIATE_LEN;
 }
