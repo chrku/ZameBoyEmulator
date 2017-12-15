@@ -3,8 +3,9 @@
 #include "cpu.h"
 #include "opcode.h"
 #include "execute.h"
+#include <stdlib.h>
 
-int decodeInstruction(uint8_t instruction, InstructionData* data);
+int decodeInstruction(uint8_t instruction, InstructionData* data)
 {
   switch (instruction)
   {

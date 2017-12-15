@@ -20,10 +20,12 @@
 // Size of the VRAM of the original game boy
 #define GB_VRAM_SIZE 8000
 
+#define START_LOCATION 0x0
+
 // Registers
 // 8 bit registers
 
-extern uint8_t accumulator; // Accumulator register
+extern uint8_t a_reg; // Accumulator register
 extern uint8_t flags; // Flags register
 
 extern uint8_t b_reg; // B, C, D, E, H, L registers
