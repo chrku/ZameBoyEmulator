@@ -6,7 +6,7 @@
 
 void doLoad8bitImmediate(uint8_t instruction)
 {
-  uint8_t immediate = accessMemory(pc + 1);
+  uint8_t immediate = readMemory(pc + 1);
   // Write to the correct register
   uint8_t* reg;
   switch(instruction)

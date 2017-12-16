@@ -31,8 +31,6 @@
 
 #define START_LOCATION 0x100
 
-#define INTERNAL_ROM_SIZE 256
-
 ////////////////////////////////////////////////////////////////////////////////
 // INITIAL VALUES FOR REGISTERS ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -44,13 +42,17 @@
 #define E_INIT_VALUE_GB 0xd8
 #define H_INIT_VALUE_GB 0x01
 #define L_INIT_VALUE_GB 0x4d
-#define STACK_INIT_VALUE_GB 0xFFFe
+#define STACK_INIT_VALUE_GB 0xfffe
 
 ////////////////////////////////////////////////////////////////////////////////
 // MEMORY MAP //////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 #define CART_LIMIT_GB 0x7fff
+#define INTERNAL_RAM_LOWER 0xc000
+#define INTERNAL_RAM_UPPER 0xdfff
+#define WORKING_RAM_LOWER 0xff80
+#define WORKING_RAM_UPPER 0xfffe
 
 ////////////////////////////////////////////////////////////////////////////////
 // Constants ///////////////////////////////////////////////////////////////////
@@ -94,9 +96,6 @@ extern uint8_t ROM[GB_ROM_SIZE];
 // Working & stack RAM
 extern uint8_t CPU_RAM[WORK_RAM_SIZE];
 
-// Internal ROM
-extern uint8_t INTERNAL_ROM[INTERNAL_ROM_SIZE];
-
 // Sleep for n cycles
 extern void sleepCycles(size_t n);
 
@@ -113,6 +112,6 @@ extern void GBStartUp();
 extern void startExecutionGB();
 
 // Access the memory segment
-uint8_t accessMemory(uint16_t addr);
+uint8_t readMemory(uint16_t addr);
 
 #endif // CPU_H

@@ -29,7 +29,6 @@ uint8_t RAM[GB_RAM_SIZE];
 uint8_t VRAM[GB_VRAM_SIZE];
 uint8_t ROM[GB_ROM_SIZE];
 uint8_t CPU_RAM[WORK_RAM_SIZE];
-uint8_t INTERNAL_ROM[INTERNAL_ROM_SIZE];
 
 int program_state;
 
@@ -64,12 +63,22 @@ void initMemory()
   memset(CPU_RAM, 0, WORK_RAM_SIZE);
 }
 
-uint8_t accessMemory(uint16_t addr)
+uint8_t readMemory(uint16_t addr)
 {
   // Adresses from 0x
   if (addr <= CART_LIMIT_GB)
   {
     return ROM[addr];
+  }
+  // Adresses to RAM
+  else if (addr >= INTERNAL_RAM_LOWER && addr <= INTERNAL_RAM_UPPER)
+  {
+    return RAM[addr - INTERNAL_RAM_LOWER];
+  }
+  // Adresses to working RAM
+  else if (addr >= WORKING_RAM_LOWER && addr <= WORKING_RAM_UPPER)
+  {
+    return CPU_RAM[addr - WORKING_RAM_LOWER];
   }
   // TODO: Implement the rest of the memory map
   return 0;
@@ -86,7 +95,9 @@ void startExecutionGB()
   // For halting, etc.
   program_state = RUNNING;
   uint8_t instruction = 0;
+#ifdef DEBUG
   char dbg;
+#endif
   // Initialize everything
   initRegisters();
   initMemory();
@@ -99,7 +110,7 @@ void startExecutionGB()
 
   while (program_state == RUNNING)
   {
-    instruction = accessMemory(pc);
+    instruction = readMemory(pc);
     decodeAndExecuteInstruction(instruction);
 
 #ifdef DEBUG
