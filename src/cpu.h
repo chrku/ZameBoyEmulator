@@ -59,6 +59,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #define RUNNING 1
 #define OFF 0
+#define WRITE_ERROR 2
 
 
 // Registers
@@ -111,7 +112,14 @@ extern void GBStartUp();
 // Start the execution loop for the GB
 extern void startExecutionGB();
 
-// Access the memory segment
+/// Read values from memory
+/// @param addr address of memory location
 uint8_t readMemory(uint16_t addr);
+
+/// Write value into memory
+/// @param addr address of memory location
+/// @param data data to be written
+/// @return int error code
+int writeMemory(uint16_t addr, uint8_t data);
 
 #endif // CPU_H

@@ -84,6 +84,26 @@ uint8_t readMemory(uint16_t addr)
   return 0;
 }
 
+int writeMemory(uint16_t addr, uint8_t data)
+{
+  if (addr <= CART_LIMIT_GB)
+  {
+    return WRITE_ERROR;
+  }
+  else if (addr >= INTERNAL_RAM_LOWER && addr <= INTERNAL_RAM_UPPER)
+  {
+    RAM[addr - INTERNAL_RAM_LOWER] = data;
+    return SUCCESS;
+  }
+  else if (addr >= WORKING_RAM_LOWER && addr <= WORKING_RAM_UPPER)
+  {
+    CPU_RAM[addr - WORKING_RAM_LOWER] = data;
+    return SUCCESS;
+  }
+  // TODO: Implement the rest of the memory map
+  return 0;
+}
+
 void GBStartUp()
 {
   // TODO: Implement the proper startup sequence
