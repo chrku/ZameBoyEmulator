@@ -33,10 +33,15 @@ def assemble_GBA(input_file, output_file):
         # Split and strip whitespace
         tokens = line.split(' ')
         tokens = [re.sub(pattern, '', x) for x in tokens]
+        # NOP get encoded as a zero byte
         if tokens[0] == 'NOP':
             output_handle.write('\0'.encode('ascii'))
         elif tokens[0] == 'LD':
             do_load(tokens, output_handle)
+        # Encode HALT as 0x76 ('v')
+        elif tokens[0] == 'HALT':
+            output_handle.write('v'.encode('ascii'))
+
 
 
 # Entry point to function

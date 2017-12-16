@@ -13,4 +13,7 @@ void doLoad8bitImmediate(uint8_t instruction);
 // NOP instruction
 void doNop();
 
+// Handle HALT instruction
+void doHalt();
+
 #endif //EXECUTE_H

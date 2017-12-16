@@ -21,6 +21,11 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       doLoad8bitImmediate(instruction);
       sleepCycles(LD_CYCLE_COUNT_REGISTER_IMMEDIATE_8);
       return SUCCESS;
+    // HALT instruction: power off cpu until interrupt occurs
+    case HALT:
+      doHalt();
+      sleepCycles(HALT_CYCLE_COUNT);
+      return SUCCESS;
     default:
       return SUCCESS;
   }

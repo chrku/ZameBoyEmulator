@@ -2,6 +2,7 @@
 #include "opcode.h"
 #include "execute.h"
 #include "cpu.h"
+#include <stdio.h>
 
 void doLoad8bitImmediate(uint8_t instruction)
 {
@@ -40,4 +41,15 @@ void doNop()
 {
   // Only increment PC
   pc += NOP_ARGLEN;
+}
+
+void doHalt()
+{
+  // Increment the PC
+  pc += HALT_ARGLEN;
+  // TODO: Implement proper halting (will need interrupts first!)
+  printf("HALT: q to quit\n");
+  char c = getchar();
+  if (c == 'q')
+    program_state = OFF;
 }

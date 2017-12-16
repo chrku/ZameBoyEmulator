@@ -1,3 +1,4 @@
+NOP
 LD A 20
 LD B 20
 LD C 20
@@ -5,3 +6,4 @@ LD D 15
 LD E 14
 LD H 10
 LD L 10
+HALT

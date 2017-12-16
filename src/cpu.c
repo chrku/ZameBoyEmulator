@@ -31,6 +31,8 @@ uint8_t ROM[GB_ROM_SIZE];
 uint8_t CPU_RAM[WORK_RAM_SIZE];
 uint8_t INTERNAL_ROM[INTERNAL_ROM_SIZE];
 
+int program_state;
+
 // Function to stop execution for n cycles
 void sleepCycles(size_t n)
 {
@@ -82,7 +84,7 @@ void GBStartUp()
 void startExecutionGB()
 {
   // For halting, etc.
-  int isRunning = RUNNING;
+  program_state = RUNNING;
   uint8_t instruction = 0;
   char dbg;
   // Initialize everything
@@ -95,7 +97,7 @@ void startExecutionGB()
   printRegisters();
 #endif
 
-  while (isRunning)
+  while (program_state == RUNNING)
   {
     instruction = accessMemory(pc);
     decodeAndExecuteInstruction(instruction);

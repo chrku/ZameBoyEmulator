@@ -56,6 +56,7 @@
 // Constants ///////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 #define RUNNING 1
+#define OFF 0
 
 
 // Registers
@@ -75,6 +76,9 @@ extern uint8_t l_reg;
 
 extern uint16_t stack_ptr; // Stack pointer
 extern uint16_t pc; // Program counter
+
+// Program state
+extern int program_state;
 
 // Memory
 
