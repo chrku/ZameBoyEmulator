@@ -3,9 +3,9 @@
 #include "execute.h"
 #include "cpu.h"
 
-void do_load_8bit_immediate(uint8_t instruction)
+void doLoad8bitImmediate(uint8_t instruction)
 {
-  uint8_t immediate = *(&pc + 1);
+  uint8_t immediate = accessMemory(pc + 1);
   // Write to the correct register
   uint8_t* reg;
   switch(instruction)
@@ -34,4 +34,10 @@ void do_load_8bit_immediate(uint8_t instruction)
   }
   *reg = immediate;
   pc += LD_REGISTER_IMMEDIATE_LEN;
+}
+
+void doNop()
+{
+  // Only increment PC
+  pc += NOP_ARGLEN;
 }

@@ -14,6 +14,6 @@
 /// @param instruction opcode
 /// @param data struct to be filled
 /// @return int error code
-int decodeInstruction(uint8_t instruction, InstructionData* data);
+int decodeAndExecuteInstruction(uint8_t instruction);
 
 #endif //DECODE_H
