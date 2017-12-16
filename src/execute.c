@@ -53,3 +53,159 @@ void doHalt()
   if (c == 'q')
     program_state = OFF;
 }
+
+void doLoadRegisterRegister(uint8_t instruction)
+{
+  // Decode the instruction and move the data between the registers
+  switch(instruction)
+  {
+    case LD_A_A:
+      a_reg = a_reg;
+      break;
+    case LD_A_B:
+      a_reg = b_reg;
+      break;
+    case LD_A_C:
+      a_reg = c_reg;
+      break;
+    case LD_A_D:
+      a_reg = d_reg;
+      break;
+    case LD_A_E:
+      a_reg = e_reg;
+      break;
+    case LD_A_H:
+      a_reg = h_reg;
+      break;
+    case LD_A_L:
+      a_reg = l_reg;
+      break;
+    case LD_B_A:
+      b_reg = a_reg;
+      break;
+    case LD_B_B:
+      b_reg = b_reg;
+      break;
+    case LD_B_C:
+      b_reg = c_reg;
+      break;
+    case LD_B_D:
+      b_reg = d_reg;
+      break;
+    case LD_B_E:
+      b_reg = e_reg;
+      break;
+    case LD_B_H:
+      b_reg = h_reg;
+      break;
+    case LD_B_L:
+      b_reg = l_reg;
+      break;
+    case LD_C_A:
+      c_reg = a_reg;
+      break;
+    case LD_C_B:
+      c_reg = b_reg;
+      break;
+    case LD_C_C:
+      c_reg = c_reg;
+      break;
+    case LD_C_D:
+      c_reg = d_reg;
+      break;
+    case LD_C_E:
+      c_reg = e_reg;
+      break;
+    case LD_C_H:
+      c_reg = h_reg;
+      break;
+    case LD_C_L:
+      c_reg = l_reg;
+      break;
+    case LD_D_A:
+      d_reg = a_reg;
+      break;
+    case LD_D_B:
+      d_reg = b_reg;
+      break;
+    case LD_D_C:
+      d_reg = c_reg;
+      break;
+    case LD_D_D:
+      d_reg = d_reg;
+      break;
+    case LD_D_E:
+      d_reg = e_reg;
+      break;
+    case LD_D_H:
+      d_reg = h_reg;
+      break;
+    case LD_D_L:
+      d_reg = l_reg;
+      break;
+    case LD_E_A:
+      e_reg = a_reg;
+      break;
+    case LD_E_B:
+      e_reg = b_reg;
+      break;
+    case LD_E_C:
+      e_reg = c_reg;
+      break;
+    case LD_E_D:
+      e_reg = d_reg;
+      break;
+    case LD_E_E:
+      e_reg = e_reg;
+      break;
+    case LD_E_H:
+      e_reg = h_reg;
+      break;
+    case LD_E_L:
+      e_reg = l_reg;
+      break;
+    case LD_H_A:
+      h_reg = a_reg;
+      break;
+    case LD_H_B:
+      h_reg = b_reg;
+      break;
+    case LD_H_C:
+      h_reg = c_reg;
+      break;
+    case LD_H_D:
+      h_reg = d_reg;
+      break;
+    case LD_H_E:
+      h_reg = e_reg;
+      break;
+    case LD_H_H:
+      h_reg = h_reg;
+      break;
+    case LD_H_L:
+      h_reg = l_reg;
+      break;
+    case LD_L_A:
+      l_reg = a_reg;
+      break;
+    case LD_L_B:
+      l_reg = b_reg;
+      break;
+    case LD_L_C:
+      l_reg = c_reg;
+      break;
+    case LD_L_D: 
+      l_reg = d_reg;
+      break;
+    case LD_L_E:
+      l_reg = e_reg;
+      break;
+    case LD_L_H:
+      l_reg = h_reg;
+      break;
+    case LD_L_L:
+      l_reg = l_reg;
+      break;
+  }
+  pc += LD_REGISTER_REGISTER_ARGLEN;
+}

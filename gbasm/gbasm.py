@@ -28,6 +28,7 @@ def do_load(tokens, output_handle):
     elif tokens[1] in reg_list:
         output_handle.write(struct.pack('B', opcodes_load_regs8[tokens[1]]))
         # Check if second argument is immediate
+        print(tokens[2])
         if tokens[2].isdigit():
             output_handle.write(struct.pack('B', int(tokens[2])))
 
