@@ -7,16 +7,29 @@ import re
 opcodes_load_regs8 = {'A': 0x3e, 'B': 0x06, 'C': 0x0e, 'D': 0x16,
                       'E': 0x1e, 'L': 0x2e, 'H': 0x26}
 
+reg_list = ['A', 'B', 'C', 'D', 'E', 'L', 'H']
+
+reg_to_reg_opcodes = {
+    'AA': 0x7f, 'AB': 0x78, 'AC': 0x79, 'AD': 0x7a, 'AE': 0x7b, 'AH': 0x7c, 'AL': 0x7d,
+    'BA': 0x47, 'BB': 0x40, 'BC': 0x41, 'BD': 0x42, 'BE': 0x43, 'BH': 0x44, 'BL': 0x45,
+    'CA': 0x4f, 'CB': 0x48, 'CC': 0x49, 'CD': 0x4a, 'CE': 0x4b, 'CH': 0x4c, 'CL': 0x4d,
+    'DA': 0x57, 'DB': 0x50, 'DC': 0x51, 'DD': 0x52, 'DE': 0x53, 'DH': 0x54, 'DL': 0x55,
+    'EA': 0x5f, 'EB': 0x58, 'EC': 0x59, 'ED': 0x5a, 'EE': 0x5b, 'EH': 0x5c, 'EL': 0x5d,
+    'HA': 0x67, 'HB': 0x60, 'HC': 0x61, 'HD': 0x62, 'HE': 0x63, 'HH': 0x64, 'HL': 0x65,
+    'LA': 0x6f, 'LB': 0x68, 'LC': 0x69, 'LD': 0x6a, 'LE': 0x6b, 'LH': 0x6c, 'LL': 0x6d
+}
+
 
 def do_load(tokens, output_handle):
     """Handle load commands"""
     # Check if argument is register
-    if tokens[1] in opcodes_load_regs8:
+    if tokens[1] in reg_list and tokens[2] in reg_list:
+        output_handle.write(struct.pack('B', reg_to_reg_opcodes[tokens[1] + tokens[2]]))
+    elif tokens[1] in reg_list:
         output_handle.write(struct.pack('B', opcodes_load_regs8[tokens[1]]))
-    # Check if second argument is immediate
-    print(tokens[2])
-    if tokens[2].isdigit():
-        output_handle.write(struct.pack('B', int(tokens[2])))
+        # Check if second argument is immediate
+        if tokens[2].isdigit():
+            output_handle.write(struct.pack('B', int(tokens[2])))
 
 
 def assemble_GBA(input_file, output_file):
