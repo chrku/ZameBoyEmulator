@@ -21,4 +21,12 @@ void doHalt();
 /// @param instruction will be further decoded
 void doLoadRegisterRegister(uint8_t instruction);
 
+/// Handle load from indirect register to register
+/// @param instruction instruction to be decoded
+void doRegisterIndirectToRegister(uint8_t instruction);
+
+/// Handle load from register to register indirect
+/// @param instruction instruction to be further decoded
+void doRegisterToRegisterIndirect(uint8_t instruction);
+
 #endif //EXECUTE_H

@@ -209,3 +209,72 @@ void doLoadRegisterRegister(uint8_t instruction)
   }
   pc += LD_REGISTER_REGISTER_ARGLEN;
 }
+
+void doRegisterIndirectToRegister(uint8_t instruction)
+{
+  uint16_t addr = (((uint16_t) h_reg) << 8) | (l_reg);
+  uint8_t value = readMemory(addr);
+#ifdef DEBUG
+  printf("Reading memory address %hx\n", addr);
+#endif
+  // Further decode instruction
+  switch(instruction)
+  {
+    case LD_A_HL:
+      a_reg = value;
+      break;
+    case LD_B_HL:
+      b_reg = value;
+      break;
+    case LD_C_HL:
+      c_reg = value;
+      break;
+    case LD_D_HL:
+      d_reg = value;
+      break;
+    case LD_E_HL:
+      e_reg = value;
+      break;
+    case LD_H_HL:
+      h_reg = value;
+      break;
+    case LD_L_H:
+      l_reg = value;
+      break;
+  }
+}
+
+void doRegisterToRegisterIndirect(uint8_t instruction)
+{
+  uint16_t addr = (((uint16_t) h_reg) << 8) | (l_reg);
+#ifdef DEBUG
+  printf("Writing memory address %hx\n", addr);
+#endif
+  uint8_t value;
+  // Further decode instruction
+  switch(instruction)
+  {
+    case LD_A_HL:
+      value = a_reg;
+      break;
+    case LD_B_HL:
+      value = b_reg;
+      break;
+    case LD_C_HL:
+      value = c_reg;
+      break;
+    case LD_D_HL:
+      value = d_reg;
+      break;
+    case LD_E_HL:
+      value = e_reg;
+      break;
+    case LD_H_HL:
+      value = h_reg;
+      break;
+    case LD_L_H:
+      value = l_reg;
+      break;
+  }
+  writeMemory(addr, value);
+}

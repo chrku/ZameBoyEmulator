@@ -39,6 +39,18 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       doLoadRegisterRegister(instruction);
       sleepCycles(LD_CYCLE_COUNT_REGISTER_REGISTER);
       return SUCCESS;
+    // Register-indirect-memory to register
+    case LD_A_HL: case LD_B_HL: case LD_C_HL: case LD_D_HL: case LD_E_HL:
+    case LD_H_HL: case LD_L_HL:
+      doRegisterIndirectToRegister(instruction);
+      sleepCycles(LD_MEM_INDIRECT_REGISTER_CYCLE_COUNT);
+      return SUCCESS;
+    // Register to register-indirect memory
+    case LD_HL_A: case LD_HL_B: case LD_HL_C: case LD_HL_D: case LD_HL_E:
+    case LD_HL_H: case LD_HL_L:
+      doRegisterToRegisterIndirect(instruction);
+      sleepCycles(LD_MEM_INDIRECT_REGISTER_CYCLE_COUNT);
+      return SUCCESS;
     // HALT instruction: power off cpu until interrupt occurs
     case HALT:
       doHalt();

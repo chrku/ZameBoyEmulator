@@ -115,7 +115,8 @@
 // Register-memory indirect loads //////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-#define REG_MEM_INDIRECT_CYCLE_COUNT 8
+#define LD_REG_MEM_INDIRECT_CYCLE_COUNT 8
+#define LD_REG_INDIRECT_REGISTER_ARGLEN 1
 
 #define LD_A_HL 0x7e
 #define LD_B_HL 0x46
@@ -129,7 +130,8 @@
 // Memory-indirect-register loads //////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-#define MEM_INDIRECT_REGISTER_CYCLE_COUNT 8
+#define LD_MEM_INDIRECT_REGISTER_CYCLE_COUNT 8
+#define LD_REGISTER_REG_MEM_INDIRECT 1
 
 #define LD_HL_A 0x77
 #define LD_HL_B 0x70
