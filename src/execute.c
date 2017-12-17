@@ -212,8 +212,25 @@ void doLoadRegisterRegister(uint8_t instruction)
 
 void doRegisterIndirectToRegister(uint8_t instruction)
 {
-  uint16_t addr = (((uint16_t) h_reg) << 8) | (l_reg);
-  uint8_t value = readMemory(addr);
+  uint16_t addr;
+  uint8_t value;
+  // Handle the special cases with register A
+  if (instruction == LD_A_BC)
+  {
+    addr = (((uint16_t) b_reg) << 8) | c_reg;
+    a_reg = readMemory(addr);
+    pc += LD_REG_INDIRECT_REGISTER_ARGLEN;
+    return;
+  }
+  else if (instruction == LD_A_DE)
+  {
+    addr = (((uint16_t) d_reg) << 8) | e_reg;
+    a_reg = readMemory(addr);
+    pc += LD_REG_INDIRECT_REGISTER_ARGLEN;
+    return;
+  }
+  addr = (((uint16_t) h_reg) << 8) | l_reg;
+  value = readMemory(addr);
   // Further decode instruction
   switch(instruction)
   {
@@ -244,8 +261,24 @@ void doRegisterIndirectToRegister(uint8_t instruction)
 
 void doRegisterToRegisterIndirect(uint8_t instruction)
 {
-  uint16_t addr = (((uint16_t) h_reg) << 8) | (l_reg);
+  uint16_t addr;
   uint8_t value;
+  // Handle special cases with register A
+  if (instruction == LD_BC_A)
+  {
+    addr = (((uint16_t) b_reg) << 8) | (c_reg);
+    writeMemory(addr, a_reg);
+    pc += LD_REG_INDIRECT_REGISTER_ARGLEN;
+    return;
+  }
+  else if (instruction == LD_DE_A)
+  {
+    addr = (((uint16_t) d_reg) << 8) | (e_reg);
+    writeMemory(addr, a_reg);
+    pc += LD_REG_INDIRECT_REGISTER_ARGLEN;
+    return;
+  }
+  addr = (((uint16_t) h_reg) << 8) | (l_reg);
   // Further decode instruction
   switch(instruction)
   {
@@ -282,4 +315,23 @@ void doImmediateIndirect()
   uint16_t addr =(((uint16_t) h_reg) << 8) | (l_reg);
   writeMemory(addr, immediate);
   pc += LD_IMM_TO_INDIRECT_REGISTER_ARGLEN;
+}
+
+void doAddrToAcc()
+{
+  uint8_t lower = readMemory(pc + 1);
+  uint8_t higher = readMemory(pc + 2);
+  uint16_t addr = (((uint16_t) higher) << 8) | lower;
+  uint8_t value = readMemory(addr);
+  a_reg = value;
+  pc += LD_ADDR_TO_REG_ARGLEN;
+}
+
+void doAccToAddr()
+{
+  uint8_t lower = readMemory(pc + 1);
+  uint8_t higher = readMemory(pc + 2);
+  uint16_t addr = (((uint16_t) higher) << 8) | lower;
+  writeMemory(addr, a_reg);
+  pc += LD_ADDR_TO_REG_ARGLEN;
 }

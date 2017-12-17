@@ -32,4 +32,10 @@ void doRegisterToRegisterIndirect(uint8_t instruction);
 /// Handle immediate to indirect memory
 void doImmediateIndirect();
 
+/// Handle memory adress to accumulator
+void doAddrToAcc();
+
+/// Handle accumulator to memory adress
+void doAccToAddr();
+
 #endif //EXECUTE_H

@@ -27,25 +27,51 @@ reg_indirect_to_reg_opcodes = {
     'A': 0x7e, 'B': 0x46, 'C': 0x4e, 'D': 0x56, 'E': 0x5e, 'H': 0x66, 'L': 0x6e
 }
 
+reg_indirect_to_acc = {
+    '(BC)': 0x0a, '(DE)': 0x1a
+}
+
+acc_to_reg_indirect = {
+    '(BC)': 0x02, '(DE)': 0x12
+}
 
 def do_load(tokens, output_handle):
     """Handle load commands"""
     # Check if argument is register
+    print(tokens)
+    parens = re.compile("\(([0-9]|[A-F]|[a-f]){4}\)")
     if tokens[1] in reg_list and tokens[2] in reg_list:
         output_handle.write(struct.pack('B', reg_to_reg_opcodes[tokens[1] + tokens[2]]))
     elif tokens[1] == '(HL)' and tokens[2] in reg_list:
         output_handle.write(struct.pack('B', reg_to_reg_indirect_opcodes[tokens[2]]))
     elif tokens[1] in reg_list and tokens[2] == '(HL)':
         output_handle.write(struct.pack('B', reg_indirect_to_reg_opcodes[tokens[1]]))
+    elif tokens[1] == 'A' and (tokens[2] == '(BC)' or tokens[2] == '(DE)'):
+        output_handle.write(struct.pack('B', reg_indirect_to_acc[tokens[2]]))
+    elif (tokens[1] == '(BC)' or tokens[1] == '(DE)') and tokens[2] == 'A':
+        output_handle.write(struct.pack('B', acc_to_reg_indirect[tokens[1]]))
+    elif tokens[1] == 'A' and parens.match(tokens[2]):
+        # Write FA opcode
+        output_handle.write(struct.pack('B', 0xfa))
+        # Write bytes in little endian order
+        output_handle.write(struct.pack('B', int(tokens[2][3:5], 16)))
+        output_handle.write(struct.pack('B', int(tokens[2][1:3], 16)))
+    elif parens.match(tokens[1]) and tokens[2] == 'A':
+        # Write EA opcode
+        output_handle.write(struct.pack('B', 0xea))
+        # Write bytes in little endian order
+        output_handle.write(struct.pack('B', int(tokens[1][3:5], 16)))
+        output_handle.write(struct.pack('B', int(tokens[1][1:3], 16)))
     elif tokens[1] == '(HL)':
-        # Write 0x76 Byte
-        output_handle.write('6'.encode('ascii'))
+        output_handle.write(struct.pack('B', 0x36))
         # Second argument is immediate
         output_handle.write(struct.pack('B', int(tokens[2], 16)))
     elif tokens[1] in reg_list:
         output_handle.write(struct.pack('B', opcodes_load_regs8[tokens[1]]))
         # Second argument is immediate
         output_handle.write(struct.pack('B', int(tokens[2], 16)))
+    else:
+        raise ValueError('Invalid instruction')
 
 
 def assemble_GBA(input_file, output_file):
@@ -64,12 +90,12 @@ def assemble_GBA(input_file, output_file):
         tokens = [re.sub(pattern, '', x) for x in tokens]
         # NOP get encoded as a zero byte
         if tokens[0] == 'NOP':
-            output_handle.write('\0'.encode('ascii'))
+            output_handle.write(struct.pack('B', 0x0))
         elif tokens[0] == 'LD':
             do_load(tokens, output_handle)
-        # Encode HALT as 0x76 ('v')
+        # Encode HALT as 0x76
         elif tokens[0] == 'HALT':
-            output_handle.write('v'.encode('ascii'))
+            output_handle.write(struct.pack('B', 0x76))
 
 
 

@@ -41,15 +41,25 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       return SUCCESS;
     // Register-indirect-memory to register
     case LD_A_HL: case LD_B_HL: case LD_C_HL: case LD_D_HL: case LD_E_HL:
-    case LD_H_HL: case LD_L_HL:
+    case LD_H_HL: case LD_L_HL: case LD_A_BC: case LD_A_DE:
       doRegisterIndirectToRegister(instruction);
       sleepCycles(LD_MEM_INDIRECT_REGISTER_CYCLE_COUNT);
       return SUCCESS;
     // Register to register-indirect memory
     case LD_HL_A: case LD_HL_B: case LD_HL_C: case LD_HL_D: case LD_HL_E:
-    case LD_HL_H: case LD_HL_L:
+    case LD_HL_H: case LD_HL_L: case LD_BC_A: case LD_DE_A:
       doRegisterToRegisterIndirect(instruction);
       sleepCycles(LD_MEM_INDIRECT_REGISTER_CYCLE_COUNT);
+      return SUCCESS;
+    // Memory address direct to accumulator
+    case LD_A_a16p:
+      doAddrToAcc();
+      sleepCycles(LD_ADDR_TO_REG_CYCLE_COUNT);
+      return SUCCESS;
+    // Accumulator to memory address
+    case LD_a16p_A:
+      doAccToAddr();
+      sleepCycles(LD_ADDR_TO_REG_CYCLE_COUNT);
       return SUCCESS;
     // Immediate to register indirect
     case LD_HL_d8:
