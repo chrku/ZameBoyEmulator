@@ -61,4 +61,22 @@ void doAa8p();
 /// A to 8-bit direct
 void doa8pA();
 
+/// Combined register immediate
+void doLoadReg16b(uint8_t instruction);
+
+/// HL to SP
+void doLoadHLSP();
+
+/// SP + n address into HL
+void doLoadHLSPN();
+
+/// SP to 16-bit address
+void doLoadSP16();
+
+/// Push instruction
+void doPush(uint8_t instruction);
+
+/// Pop instruction
+void doPop(uint8_t instruction);
+
 #endif //EXECUTE_H

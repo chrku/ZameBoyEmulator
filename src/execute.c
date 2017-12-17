@@ -418,3 +418,127 @@ void doa8pA()
   a_reg = readMemory(addr);
   pc += LD_A_a8p_ARGLEN;
 }
+
+void doLoadReg16b(uint8_t instruction)
+{
+  // Further decoding, little endian
+  uint8_t high = readMemory(pc + 2);
+  uint8_t low = readMemory(pc + 1);
+  switch (instruction)
+  {
+    case LD_BC_d16:
+      b_reg = high;
+      c_reg = low;
+      break;
+    case LD_DE_d16:
+      d_reg = high;
+      e_reg = low;
+      break;
+    case LD_HL_d16:
+      h_reg = high;
+      l_reg = low;
+      break;
+    case LD_SP_d16:
+      // Combine low and high
+      stack_ptr = (((uint16_t) high) << 8) | low;
+      break;
+  }
+  pc += LD_COMB_ARGLEN;
+}
+
+void doLoadHLSP()
+{
+  stack_ptr = (((uint16_t) h_reg) << 8) | l_reg;
+  pc += LD_REG_SP_ARGLEN;
+}
+
+void doLoadHLSPN()
+{
+  uint16_t offset = readMemory(pc + 1);
+  uint16_t value = stack_ptr + offset;
+  // This instruction affects the Z H C S flags
+  h_reg = (uint8_t) value >> 8;
+  l_reg = (uint8_t) value;
+  flags = 0;
+  // Check for carry
+  if (stack_ptr + offset > 0xffff)
+    flags |= 0x20;
+  // Check for half carry
+  if ((stack_ptr & 0xfff) + (offset & 0xfff) > 0xfff)
+    flags |= 0x10;
+  pc += LDHL_ARGLEN;
+}
+
+void doLoadSP16()
+{
+  uint16_t addr_low = readMemory(pc + 1);
+  uint16_t addr_high = readMemory(pc + 2);
+  uint16_t addr = (addr_high << 8) | addr_low;
+  writeMemory(addr, stack_ptr);
+  pc += LD_d16_SP_ARGLEN;
+}
+
+void doPush(uint8_t instruction)
+{
+  switch(instruction)
+  {
+    case PUSH_AF:
+      // Save both regs on stack, decrement twice
+      writeMemory(stack_ptr, a_reg);
+      stack_ptr -= 1;
+      writeMemory(stack_ptr, flags);
+      stack_ptr -= 1;
+      break;
+    case PUSH_BC:
+      writeMemory(stack_ptr, b_reg);
+      stack_ptr -= 1;
+      writeMemory(stack_ptr, c_reg);
+      stack_ptr -= 1;
+      break;
+    case PUSH_DE: 
+      writeMemory(stack_ptr, d_reg);
+      stack_ptr -= 1;
+      writeMemory(stack_ptr, e_reg);
+      stack_ptr -= 1;
+      break;
+    case PUSH_HL:
+      writeMemory(stack_ptr, h_reg);
+      stack_ptr -= 1;
+      writeMemory(stack_ptr, l_reg);
+      stack_ptr -= 1;
+      break;
+  }
+  pc += PUSH_REGS_ARGLEN;
+}
+
+void doPop(uint8_t instruction)
+{
+  switch(instruction)
+  {
+    case POP_AF:
+      flags = readMemory(stack_ptr);
+      stack_ptr += 1;
+      a_reg = readMemory(stack_ptr);
+      stack_ptr += 1;
+      break;
+    case POP_BC:
+      c_reg = readMemory(stack_ptr);
+      stack_ptr += 1;
+      b_reg = readMemory(stack_ptr);
+      stack_ptr += 1;
+      break;
+    case POP_DE: 
+      e_reg = readMemory(stack_ptr);
+      stack_ptr += 1;
+      d_reg = readMemory(stack_ptr);
+      stack_ptr += 1;
+      break;
+    case POP_HL:
+      l_reg = readMemory(stack_ptr);
+      stack_ptr += 1;
+      h_reg = readMemory(stack_ptr);
+      stack_ptr += 1;
+      break;
+  }
+ pc += POP_REGS_ARGLEN;
+}

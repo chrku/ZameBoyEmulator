@@ -9,12 +9,21 @@ int decodeAndExecuteInstruction(uint8_t instruction)
 {
   switch (instruction)
   {
+    ////////////////////////////////////////////////////////////////////////////
+    // Control instructions
     // INSTRUCTION TYPE 1: NOP 
     // Do nothing
     case NOP:
       doNop();
       sleepCycles(NOP_CYCLE_COUNT);
       return SUCCESS;
+    // HALT instruction: power off cpu until interrupt occurs
+    case HALT:
+      doHalt();
+      sleepCycles(HALT_CYCLE_COUNT);
+      return SUCCESS;
+    ////////////////////////////////////////////////////////////////////////////
+    // 8-bit loads
     // REGISTER-IMMEDIATE LOADS WITH 8-BIT IMMEDIATE ARGUMENT
     case LD_B_d8: case LD_D_d8: case LD_H_d8: case LD_C_d8:
     case LD_E_d8: case LD_L_d8: case LD_A_d8:
@@ -106,10 +115,37 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       doa8pA();
       sleepCycles(LD_A_a8p_CYCLES);
       return SUCCESS;
-    // HALT instruction: power off cpu until interrupt occurs
-    case HALT:
-      doHalt();
-      sleepCycles(HALT_CYCLE_COUNT);
+    ////////////////////////////////////////////////////////////////////////////
+    // 16 bit loads
+    // Combined register immediate
+    case LD_BC_d16: case LD_DE_d16: case LD_HL_d16: case LD_SP_d16:
+      doLoadReg16b(instruction);
+      sleepCycles(LD_COMB_CYCLES);
+      return SUCCESS;
+    // HL to stack pointer
+    case LD_SP_HL:
+      doLoadHLSP();
+      sleepCycles(LD_REG_SP_CYCLES);
+      return SUCCESS;
+    // SP + 8-bit into HL
+    case LD_HL_SP_N:
+      doLoadHLSPN();
+      sleepCycles(LDHL_CYCLES);
+      return SUCCESS;
+    // SP to address nn
+    case LD_d16p_SP:
+      doLoadSP16();
+      sleepCycles(LD_d16_SP_CYCLES);
+      return SUCCESS;
+    // Push reg onto stack
+    case PUSH_AF: case PUSH_BC: case PUSH_DE: case PUSH_HL:
+      doPush(instruction);
+      sleepCycles(PUSH_REGS_CYCLES);
+      return SUCCESS;
+    // Pop reg off stack
+    case POP_AF: case POP_BC: case POP_DE: case POP_HL:
+      doPop(instruction);
+      sleepCycles(POP_REGS_CYCLES);
       return SUCCESS;
     default:
       return -1;
