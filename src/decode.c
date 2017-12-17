@@ -66,12 +66,52 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       doImmediateIndirect();
       sleepCycles(LD_IMM_TO_INDIRECT_REGISTER_CYCLE_COUNT);
       return SUCCESS;
+    // Accumulutor - C
+    case LD_A_C_INDIRECT:
+      doACIndirect();
+      sleepCycles(LD_A_C_CYCLES);
+      return SUCCESS;
+    // C - Accumulator
+    case LD_C_INDIRECT_A:
+      doCIndirectA();
+      sleepCycles(LD_A_C_CYCLES);
+      return SUCCESS;
+    // (HL) dec to A
+    case LD_DEC_A:
+      doHLDtoA();
+      sleepCycles(LD_DEC_A_CYCLES);
+      return SUCCESS;
+    // A to (HL) dec
+    case LD_A_DEC:
+      doAtoHLD();
+      sleepCycles(LD_DEC_A_CYCLES);
+      return SUCCESS;
+    // (HL) inc to A
+    case LD_INC_A:
+      doHLItoA();
+      sleepCycles(LD_DEC_A_CYCLES);
+      return SUCCESS;
+    // A to (HL) inc
+    case LD_A_INC:
+      doAtoHLI();
+      sleepCycles(LD_DEC_A_CYCLES);
+      return SUCCESS;
+    // 8-bit direct address to A
+    case LD_A_a8p:
+      doAa8p();
+      sleepCycles(LD_A_a8p_CYCLES);
+      return SUCCESS;
+    // And from A
+    case LD_a8p_A:
+      doa8pA();
+      sleepCycles(LD_A_a8p_CYCLES);
+      return SUCCESS;
     // HALT instruction: power off cpu until interrupt occurs
     case HALT:
       doHalt();
       sleepCycles(HALT_CYCLE_COUNT);
       return SUCCESS;
     default:
-      return SUCCESS;
+      return -1;
   }
 }

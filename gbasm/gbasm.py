@@ -40,6 +40,7 @@ def do_load(tokens, output_handle):
     # Check if argument is register
     print(tokens)
     parens = re.compile("\(([0-9]|[A-F]|[a-f]){4}\)")
+    parens1 = re.compile("\(([0-9]|[A-F]|[a-f]){2}\)")
     if tokens[1] in reg_list and tokens[2] in reg_list:
         output_handle.write(struct.pack('B', reg_to_reg_opcodes[tokens[1] + tokens[2]]))
     elif tokens[1] == '(HL)' and tokens[2] in reg_list:
@@ -50,6 +51,24 @@ def do_load(tokens, output_handle):
         output_handle.write(struct.pack('B', reg_indirect_to_acc[tokens[2]]))
     elif (tokens[1] == '(BC)' or tokens[1] == '(DE)') and tokens[2] == 'A':
         output_handle.write(struct.pack('B', acc_to_reg_indirect[tokens[1]]))
+    elif tokens[1] == 'A' and tokens[2] == '(C)':
+        output_handle.write(struct.pack('B', 0xf2))
+    elif tokens[1] == '(C)' and tokens[2] == 'A':
+        output_handle.write(struct.pack('B', 0xe2))
+    elif (tokens[1] == 'A' and tokens[2] == '(HLD)') or tokens[1] == 'A' and tokens[2] == '(HL-)':
+        output_handle.write(struct.pack('B', 0x3a))
+    elif (tokens[2] == 'A' and tokens[1] == '(HLD)') or tokens[2] == 'A' and tokens[1] == '(HL-)':
+        output_handle.write(struct.pack('B', 0x32))
+    elif (tokens[1] == 'A' and tokens[2] == '(HLI)') or tokens[1] == 'A' and tokens[2] == '(HL+)':
+        output_handle.write(struct.pack('B', 0x2a))
+    elif (tokens[2] == 'A' and tokens[1] == '(HLI)') or tokens[2] == 'A' and tokens[1] == '(HL+)':
+        output_handle.write(struct.pack('B', 0x22))
+    elif parens1.match(tokens[1]) and tokens[2] == 'A':
+        output_handle.write(struct.pack('B', 0xe0))
+        output_handle.write(struct.pack('B', int(tokens[1][1:3], 16)))
+    elif parens1.match(tokens[2]) and tokens[1] == 'A':
+        output_handle.write(struct.pack('B', 0xf0))
+        output_handle.write(struct.pack('B', int(tokens[1][1:3], 16)))
     elif tokens[1] == 'A' and parens.match(tokens[2]):
         # Write FA opcode
         output_handle.write(struct.pack('B', 0xfa))

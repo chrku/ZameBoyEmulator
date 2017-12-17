@@ -335,3 +335,86 @@ void doAccToAddr()
   writeMemory(addr, a_reg);
   pc += LD_ADDR_TO_REG_ARGLEN;
 }
+
+// Provide access to working ram over C
+void doACIndirect()
+{
+  uint16_t addr = 0xff00 + c_reg;
+  a_reg = readMemory(addr);
+  pc += LD_A_C_ARGLEN;
+}
+
+void doCIndirectA()
+{
+  uint16_t addr = 0xff00 + c_reg;
+  writeMemory(addr, a_reg);
+  pc += LD_A_C_ARGLEN;
+}
+
+
+// Increment, decrement HL, otherwise normal memory op
+void doHLDtoA()
+{
+  doRegisterIndirectToRegister(LD_A_HL);
+  uint16_t higher = ((uint16_t) h_reg) << 8;
+  uint8_t lower = l_reg;
+  higher |= lower;
+  higher--;
+  h_reg = (uint8_t) (higher >> 8);
+  l_reg = (uint8_t) higher;
+  pc += LD_DEC_A_ARGLEN;
+}
+
+void doAtoHLD()
+{
+  doRegisterToRegisterIndirect(LD_HL_A);
+  uint16_t higher = ((uint16_t) h_reg) << 8;
+  uint8_t lower = l_reg;
+  higher |= lower;
+  higher--;
+  h_reg = (uint8_t) (higher >> 8);
+  l_reg = (uint8_t) higher;
+  pc += LD_DEC_A_ARGLEN;
+}
+
+void doHLItoA()
+{
+  doRegisterIndirectToRegister(LD_A_HL);
+  uint16_t higher = ((uint16_t) h_reg) << 8;
+  uint8_t lower = l_reg;
+  higher |= lower;
+  higher++;
+  h_reg = (uint8_t) (higher >> 8);
+  l_reg = (uint8_t) higher;
+  pc += LD_DEC_A_ARGLEN;
+}
+
+void doAtoHLI()
+{
+  doRegisterToRegisterIndirect(LD_HL_A);
+  uint16_t higher = ((uint16_t) h_reg) << 8;
+  uint8_t lower = l_reg;
+  higher |= lower;
+  higher++;
+  h_reg = (uint8_t) (higher >> 8);
+  l_reg = (uint8_t) higher;
+  pc += LD_DEC_A_ARGLEN;
+}
+
+// Access to 0xff00 + n
+void doAa8p()
+{
+  uint8_t offset = readMemory(pc + 1);
+  uint16_t addr = 0xff00 + offset;
+  writeMemory(addr, a_reg);
+  pc += LD_A_a8p_ARGLEN;
+}
+
+// Read from 0xff00 + n
+void doa8pA()
+{
+  uint8_t offset = readMemory(pc + 1);
+  uint16_t addr = 0xff00 + offset;
+  a_reg = readMemory(addr);
+  pc += LD_A_a8p_ARGLEN;
+}

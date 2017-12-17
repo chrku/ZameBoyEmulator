@@ -38,4 +38,27 @@ void doAddrToAcc();
 /// Handle accumulator to memory adress
 void doAccToAddr();
 
+/// A and C indirect
+void doACIndirect();
+
+void doCIndirectA();
+
+/// HL decrement to A
+void doHLDtoA();
+
+/// A to HL decrement
+void doAtoHLD();
+
+/// HL increment to A
+void doHLItoA();
+
+/// A to HL increment
+void doAtoHLI();
+
+/// 8-bit direct to A
+void doAa8p();
+
+/// A to 8-bit direct
+void doa8pA();
+
 #endif //EXECUTE_H
