@@ -242,6 +242,7 @@ void doRegisterIndirectToRegister(uint8_t instruction)
       l_reg = value;
       break;
   }
+  pc += LD_REG_INDIRECT_REGISTER_ARGLEN;
 }
 
 void doRegisterToRegisterIndirect(uint8_t instruction)
@@ -254,27 +255,28 @@ void doRegisterToRegisterIndirect(uint8_t instruction)
   // Further decode instruction
   switch(instruction)
   {
-    case LD_A_HL:
+    case LD_HL_A:
       value = a_reg;
       break;
-    case LD_B_HL:
+    case LD_HL_B:
       value = b_reg;
       break;
-    case LD_C_HL:
+    case LD_HL_C:
       value = c_reg;
       break;
-    case LD_D_HL:
+    case LD_HL_D:
       value = d_reg;
       break;
-    case LD_E_HL:
+    case LD_HL_E:
       value = e_reg;
       break;
-    case LD_H_HL:
+    case LD_HL_H:
       value = h_reg;
       break;
-    case LD_L_H:
+    case LD_HL_L:
       value = l_reg;
       break;
   }
   writeMemory(addr, value);
+  pc += LD_REG_INDIRECT_REGISTER_ARGLEN;
 }

@@ -39,10 +39,8 @@ def do_load(tokens, output_handle):
         output_handle.write(struct.pack('B', reg_indirect_to_reg_opcodes[tokens[1]]))
     elif tokens[1] in reg_list:
         output_handle.write(struct.pack('B', opcodes_load_regs8[tokens[1]]))
-        # Check if second argument is immediate
-        print(tokens[2])
-        if tokens[2].isdigit():
-            output_handle.write(struct.pack('B', int(tokens[2])))
+        # Second argument is immediate
+        output_handle.write(struct.pack('B', int(tokens[2], 16)))
 
 
 def assemble_GBA(input_file, output_file):
