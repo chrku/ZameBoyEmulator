@@ -457,7 +457,7 @@ void doLoadHLSPN()
   uint16_t offset = readMemory(pc + 1);
   uint16_t value = stack_ptr + offset;
   // This instruction affects the Z H C S flags
-  h_reg = (uint8_t) value >> 8;
+  h_reg = (uint8_t) (value >> 8);
   l_reg = (uint8_t) value;
   flags = 0;
   // Check for carry
@@ -516,28 +516,28 @@ void doPop(uint8_t instruction)
   switch(instruction)
   {
     case POP_AF:
+      stack_ptr += 1;
       flags = readMemory(stack_ptr);
       stack_ptr += 1;
       a_reg = readMemory(stack_ptr);
-      stack_ptr += 1;
       break;
     case POP_BC:
+      stack_ptr += 1;
       c_reg = readMemory(stack_ptr);
       stack_ptr += 1;
       b_reg = readMemory(stack_ptr);
-      stack_ptr += 1;
       break;
     case POP_DE: 
+      stack_ptr += 1;
       e_reg = readMemory(stack_ptr);
       stack_ptr += 1;
       d_reg = readMemory(stack_ptr);
-      stack_ptr += 1;
       break;
     case POP_HL:
+      stack_ptr += 1;
       l_reg = readMemory(stack_ptr);
       stack_ptr += 1;
       h_reg = readMemory(stack_ptr);
-      stack_ptr += 1;
       break;
   }
  pc += POP_REGS_ARGLEN;

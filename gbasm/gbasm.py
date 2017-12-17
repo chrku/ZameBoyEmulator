@@ -9,6 +9,8 @@ opcodes_load_regs8 = {'A': 0x3e, 'B': 0x06, 'C': 0x0e, 'D': 0x16,
 
 reg_list = ['A', 'B', 'C', 'D', 'E', 'L', 'H']
 
+reg_comb_list = ['BC', 'DE', 'HL', 'SP', 'AF']
+
 reg_to_reg_opcodes = {
     'AA': 0x7f, 'AB': 0x78, 'AC': 0x79, 'AD': 0x7a, 'AE': 0x7b, 'AH': 0x7c, 'AL': 0x7d,
     'BA': 0x47, 'BB': 0x40, 'BC': 0x41, 'BD': 0x42, 'BE': 0x43, 'BH': 0x44, 'BL': 0x45,
@@ -41,6 +43,7 @@ def do_load(tokens, output_handle):
     print(tokens)
     parens = re.compile("\(([0-9]|[A-F]|[a-f]){4}\)")
     parens1 = re.compile("\(([0-9]|[A-F]|[a-f]){2}\)")
+    imm = re.compile("([0-9]|[A-F]|[a-f]){4}")
     if tokens[1] in reg_list and tokens[2] in reg_list:
         output_handle.write(struct.pack('B', reg_to_reg_opcodes[tokens[1] + tokens[2]]))
     elif tokens[1] == '(HL)' and tokens[2] in reg_list:
@@ -63,6 +66,19 @@ def do_load(tokens, output_handle):
         output_handle.write(struct.pack('B', 0x2a))
     elif (tokens[2] == 'A' and tokens[1] == '(HLI)') or tokens[2] == 'A' and tokens[1] == '(HL+)':
         output_handle.write(struct.pack('B', 0x22))
+    elif tokens[1] in reg_comb_list and imm.match(tokens[2]):
+        if tokens[1] == 'BC':
+            output_handle.write(struct.pack('B', 0x01))
+        elif tokens[1] == 'DE':
+            output_handle.write(struct.pack('B', 0x11))
+        elif tokens[1] == 'HL':
+            output_handle.write(struct.pack('B', 0x21))
+        elif tokens[1] == 'SP':
+            output_handle.write(struct.pack('B', 0x31))
+        output_handle.write(struct.pack('B', int(tokens[2][2:4], 16)))
+        output_handle.write(struct.pack('B', int(tokens[2][0:2], 16)))
+    elif tokens[1] == 'SP' and tokens[2] == 'HL':
+        output_handle.write(struct.pack('B', 0xf9))
     elif parens1.match(tokens[1]) and tokens[2] == 'A':
         output_handle.write(struct.pack('B', 0xe0))
         output_handle.write(struct.pack('B', int(tokens[1][1:3], 16)))
@@ -89,9 +105,47 @@ def do_load(tokens, output_handle):
         output_handle.write(struct.pack('B', opcodes_load_regs8[tokens[1]]))
         # Second argument is immediate
         output_handle.write(struct.pack('B', int(tokens[2], 16)))
+    elif parens.match(tokens[1]) and tokens[2] == 'SP':
+        output_handle.write(struct.pack('B', 0x08))
+        output_handle.write(struct.pack('B', int(tokens[1][3:5], 16)))
+        output_handle.write(struct.pack('B', int(tokens[1][1:3], 16)))
     else:
         raise ValueError('Invalid instruction')
 
+
+def do_ldhl(tokens, output_handle):
+    parens = re.compile("([0-9]|[A-F]|[a-f]){2}")
+    if tokens[1] == 'SP' and parens.match(tokens[2]):
+        output_handle.write(struct.pack('B', 0xf8))
+        output_handle.write(struct.pack('B', int(tokens[2], 16)))
+    else:
+        raise ValueError('Invalid instruction')
+
+
+def do_push(tokens, output_handle):
+    if tokens[1] == 'AF':
+        output_handle.write(struct.pack('B', 0xf5))
+    elif tokens[1] == 'BC':
+        output_handle.write(struct.pack('B', 0xc5))
+    elif tokens[1] == 'DE:':
+        output_handle.write(struct.pack('B', 0xd5))
+    elif tokens[1] == 'HL':
+        output_handle.write(struct.pack('B', 0xe5))
+    else:
+        raise ValueError('Invalid instruction')
+
+
+def do_pop(tokens, output_handle):
+    if tokens[1] == 'AF':
+        output_handle.write(struct.pack('B', 0xf1))
+    elif tokens[1] == 'BC':
+        output_handle.write(struct.pack('B', 0xc1))
+    elif tokens[1] == 'DE:':
+        output_handle.write(struct.pack('B', 0xd1))
+    elif tokens[1] == 'HL':
+        output_handle.write(struct.pack('B', 0xe1))
+    else:
+        raise ValueError('Invalid instruction')
 
 def assemble_GBA(input_file, output_file):
     """Assembles given GBA assembly file into a ROM output
@@ -112,6 +166,12 @@ def assemble_GBA(input_file, output_file):
             output_handle.write(struct.pack('B', 0x0))
         elif tokens[0] == 'LD':
             do_load(tokens, output_handle)
+        elif tokens[0] == 'LDHL':
+            do_ldhl(tokens, output_handle)
+        elif tokens[0] == 'PUSH':
+            do_push(tokens, output_handle)
+        elif tokens[0] == 'POP':
+            do_pop(tokens, output_handle)
         # Encode HALT as 0x76
         elif tokens[0] == 'HALT':
             output_handle.write(struct.pack('B', 0x76))
