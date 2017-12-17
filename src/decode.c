@@ -51,6 +51,11 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       doRegisterToRegisterIndirect(instruction);
       sleepCycles(LD_MEM_INDIRECT_REGISTER_CYCLE_COUNT);
       return SUCCESS;
+    // Immediate to register indirect
+    case LD_HL_d8:
+      doImmediateIndirect();
+      sleepCycles(LD_IMM_TO_INDIRECT_REGISTER_CYCLE_COUNT);
+      return SUCCESS;
     // HALT instruction: power off cpu until interrupt occurs
     case HALT:
       doHalt();

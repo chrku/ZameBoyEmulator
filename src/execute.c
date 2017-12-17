@@ -280,3 +280,12 @@ void doRegisterToRegisterIndirect(uint8_t instruction)
   writeMemory(addr, value);
   pc += LD_REG_INDIRECT_REGISTER_ARGLEN;
 }
+
+void doImmediateIndirect()
+{
+  // Get second argument
+  uint8_t immediate = readMemory(pc + 1);
+  uint16_t addr =(((uint16_t) h_reg) << 8) | (l_reg);
+  writeMemory(addr, immediate);
+  pc += LD_IMM_TO_INDIRECT_REGISTER_ARGLEN;
+}

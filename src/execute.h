@@ -29,4 +29,7 @@ void doRegisterIndirectToRegister(uint8_t instruction);
 /// @param instruction instruction to be further decoded
 void doRegisterToRegisterIndirect(uint8_t instruction);
 
+/// Handle immediate to indirect memory
+void doImmediateIndirect();
+
 #endif //EXECUTE_H

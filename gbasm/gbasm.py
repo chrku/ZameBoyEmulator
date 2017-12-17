@@ -37,6 +37,11 @@ def do_load(tokens, output_handle):
         output_handle.write(struct.pack('B', reg_to_reg_indirect_opcodes[tokens[2]]))
     elif tokens[1] in reg_list and tokens[2] == '(HL)':
         output_handle.write(struct.pack('B', reg_indirect_to_reg_opcodes[tokens[1]]))
+    elif tokens[1] == '(HL)':
+        # Write 0x76 Byte
+        output_handle.write('6'.encode('ascii'))
+        # Second argument is immediate
+        output_handle.write(struct.pack('B', int(tokens[2], 16)))
     elif tokens[1] in reg_list:
         output_handle.write(struct.pack('B', opcodes_load_regs8[tokens[1]]))
         # Second argument is immediate
