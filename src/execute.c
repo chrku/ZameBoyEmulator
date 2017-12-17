@@ -214,9 +214,6 @@ void doRegisterIndirectToRegister(uint8_t instruction)
 {
   uint16_t addr = (((uint16_t) h_reg) << 8) | (l_reg);
   uint8_t value = readMemory(addr);
-#ifdef DEBUG
-  printf("Reading memory address %hx\n", addr);
-#endif
   // Further decode instruction
   switch(instruction)
   {
@@ -248,9 +245,6 @@ void doRegisterIndirectToRegister(uint8_t instruction)
 void doRegisterToRegisterIndirect(uint8_t instruction)
 {
   uint16_t addr = (((uint16_t) h_reg) << 8) | (l_reg);
-#ifdef DEBUG
-  printf("Writing memory address %hx\n", addr);
-#endif
   uint8_t value;
   // Further decode instruction
   switch(instruction)

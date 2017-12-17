@@ -65,6 +65,9 @@ void initMemory()
 
 uint8_t readMemory(uint16_t addr)
 {
+#ifdef DEBUG
+  printf("Reading address %hx\n", addr);
+#endif
   // Adresses from 0x
   if (addr <= CART_LIMIT_GB)
   {
@@ -86,6 +89,9 @@ uint8_t readMemory(uint16_t addr)
 
 int writeMemory(uint16_t addr, uint8_t data)
 {
+#ifdef DEBUG
+  printf("Writing address %hx\n", addr);
+#endif
   if (addr <= CART_LIMIT_GB)
   {
     return WRITE_ERROR;
