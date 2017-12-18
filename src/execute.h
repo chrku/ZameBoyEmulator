@@ -79,4 +79,16 @@ void doPush(uint8_t instruction);
 /// Pop instruction
 void doPop(uint8_t instruction);
 
+/// Add accumulator register
+void add(uint8_t instruction);
+
+/// Add accumulator with carry
+void adc(uint8_t instruction);
+
+/// Subtract accumulator register
+void sub(uint8_t instruction);
+
+/// Subtract accumulator with carry
+void sbc(uint8_t instruction);
+
 #endif //EXECUTE_H

@@ -147,6 +147,44 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       doPop(instruction);
       sleepCycles(POP_REGS_CYCLES);
       return SUCCESS;
+    ////////////////////////////////////////////////////////////////////////////
+    // Arithmetic instructions
+    // ADD A, without carry
+    case ADD_AA: case ADD_AB: case ADD_AC: case ADD_AD: case ADD_AE:
+    case ADD_AH: case ADD_AL: case ADD_A_IND: case ADD_A_d8:
+      add(instruction);
+      if (instruction != ADD_A_IND && instruction != ADD_A_d8)
+        sleepCycles(ALU_REG_CYCLES);
+      else
+        sleepCycles(ALU_OTHER_CYCLES);
+      return SUCCESS;
+    // ADD A, with carry
+    case ADC_AA: case ADC_AB: case ADC_AC: case ADC_AD: case ADC_AE: 
+    case ADC_AH: case ADC_AL: case ADC_A_IND: case ADC_A_d8:
+      adc(instruction);
+      if (instruction != ADC_A_IND && instruction != ADC_A_d8)
+        sleepCycles(ALU_REG_CYCLES);
+      else
+        sleepCycles(ALU_OTHER_CYCLES);
+      return SUCCESS;
+    // SUB A, without carry
+    case SUB_AA: case SUB_AB: case SUB_AC: case SUB_AD: case SUB_AE:
+    case SUB_AH: case SUB_AL: case SUB_A_IND: case SUB_A_d8:
+      sub(instruction);
+      if (instruction != SUB_A_IND && instruction != SUB_A_d8)
+        sleepCycles(ALU_REG_CYCLES);
+      else
+        sleepCycles(ALU_OTHER_CYCLES);
+      return SUCCESS;
+    // SBC: Sub with carry
+    case SBC_AA: case SBC_AB: case SBC_AC: case SBC_AD: case SBC_AE:
+    case SBC_AH: case SBC_AL: case SBC_A_IND: case SBC_A_d8:
+      sbc(instruction);
+      if (instruction != SBC_A_IND && instruction != SBC_A_d8)
+        sleepCycles(ALU_REG_CYCLES);
+      else
+        sleepCycles(ALU_OTHER_CYCLES);
+      return SUCCESS;
     default:
       return -1;
   }

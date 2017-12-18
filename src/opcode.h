@@ -273,5 +273,76 @@
 #define POP_HL 0xe1
 
 ////////////////////////////////////////////////////////////////////////////////
+// 8-bit ALU instructions //////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// ADD AND SUBTRACT ACCUMULATOR
+// Affects Z N H C
+// ADD: Addition
+// ADD A, reg/imm/(HL)
+
+// Registers
+#define ALU_REG_CYCLES 4
+#define ALU_REG_ARGLEN 1
+
+#define ADD_AA 0x87
+#define ADD_AB 0x80
+#define ADD_AC 0x81
+#define ADD_AD 0x82
+#define ADD_AE 0x83
+#define ADD_AH 0x84
+#define ADD_AL 0x85
+
+// Immediate/Indirect memory
+
+#define ALU_OTHER_CYCLES 8
+#define ADD_IMM_ARGLEN 2
+
+#define ADD_A_IND 0x86
+#define ADD_A_d8 0xc6
+
+// ADC: ADD WITH CARRY BIT
+// Affects Z N H C
+// Same cycles, arglen as ADD
+// Registers
+
+#define ADC_AA 0x8f
+#define ADC_AB 0x88
+#define ADC_AC 0x89
+#define ADC_AD 0x8a
+#define ADC_AE 0x8b
+#define ADC_AH 0x8c
+#define ADC_AL 0x8d
+
+// Immediate/Indirect
+
+#define ADC_A_IND 0x8e
+#define ADC_A_d8 0xce
+
+// SUB Sub without carry
+
+#define SUB_AA 0x97
+#define SUB_AB 0x90
+#define SUB_AC 0x91
+#define SUB_AD 0x92
+#define SUB_AE 0x93
+#define SUB_AH 0x94
+#define SUB_AL 0x95
+
+#define SUB_A_IND 0x96
+#define SUB_A_d8 0xd6
+
+// SBC Sub with carry
+
+#define SBC_AA 0x9f
+#define SBC_AB 0x98
+#define SBC_AC 0x99
+#define SBC_AD 0x9a
+#define SBC_AE 0x9b
+#define SBC_AH 0x9c
+#define SBC_AL 0x9d
+
+#define SBC_A_IND 0x9e
+
+////////////////////////////////////////////////////////////////////////////////
 
 #endif // OPCODE_H

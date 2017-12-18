@@ -515,6 +515,7 @@ void doPop(uint8_t instruction)
 {
   switch(instruction)
   {
+    // Determine registers to pop into
     case POP_AF:
       stack_ptr += 1;
       flags = readMemory(stack_ptr);
@@ -541,4 +542,266 @@ void doPop(uint8_t instruction)
       break;
   }
  pc += POP_REGS_ARGLEN;
+}
+
+void add(uint8_t instruction)
+{
+  uint8_t summand = 0;
+  uint16_t addr = 0;
+  // Determine summand
+  switch(instruction)
+  {
+    case ADD_AA:
+      summand = a_reg;
+      break;
+    case ADD_AB:
+      summand = b_reg;
+      break;
+    case ADD_AC:
+      summand = c_reg;
+      break;
+    case ADD_AD:
+      summand = d_reg;
+      break;
+    case ADD_AE:
+      summand = e_reg;
+      break;
+    case ADD_AH:
+      summand = h_reg;
+      break;
+    case ADD_AL: 
+      summand = l_reg;
+      break;
+    case ADD_A_IND:
+      addr = (((uint16_t) h_reg) << 8) | l_reg;
+      summand = readMemory(addr);
+      break;
+    case ADD_A_d8:
+      summand = readMemory(pc + 1);
+      break;
+  }
+  // Set flags
+  // Carry flag
+  if (((uint16_t) a_reg) + summand > 0xff)
+  {
+    flags |= 0x10;
+  }
+  // Clear the n flag
+  flags &= ~(0x40);
+  // Half carry flag
+  if (((a_reg & 0xf) + (summand & 0xf)) & 0x10) 
+  {
+    flags |= 0x20;
+  }
+  if (a_reg + summand == 0)
+  {
+    flags |= 0x80;
+  }
+  a_reg += summand;
+  if (instruction != ADD_A_d8)
+  {
+    pc += ALU_REG_ARGLEN;
+  }
+  else
+  {
+    pc += ALU_IMM_ARGLEN;
+  }
+}
+
+void adc(uint8_t instruction)
+{
+  uint8_t summand = 0;
+  uint16_t addr = 0;
+  // Determine summand
+  switch(instruction)
+  {
+    case ADC_AA:
+      summand = a_reg;
+      break;
+    case ADC_AB:
+      summand = b_reg;
+      break;
+    case ADC_AC:
+      summand = c_reg;
+      break;
+    case ADC_AD:
+      summand = d_reg;
+      break;
+    case ADC_AE:
+      summand = e_reg;
+      break;
+    case ADC_AH:
+      summand = h_reg;
+      break;
+    case ADC_AL: 
+      summand = l_reg;
+      break;
+    case ADC_A_IND:
+      addr = (((uint16_t) h_reg) << 8) | l_reg;
+      summand = readMemory(addr);
+      break;
+    case ADC_A_d8:
+      summand = readMemory(pc + 1);
+      break;
+  }
+  // Add carry flag
+  if (flags & 0x80)
+    summand += 1;
+  // Set flags
+  // Carry flag
+  if (((uint16_t) a_reg) + summand > 0xff)
+  {
+    flags |= 0x10;
+  }
+  // Clear the n flag
+  flags &= ~(0x40);
+  // Half carry flag
+  if (((a_reg & 0xf) + (summand & 0xf)) & 0x10) 
+  {
+    flags |= 0x20;
+  }
+  if (a_reg + summand == 0)
+  {
+    flags |= 0x80;
+  }
+  a_reg += summand;
+  if (instruction != ADD_A_d8)
+  {
+    pc += ALU_REG_ARGLEN;
+  }
+  else
+  {
+    pc += ALU_IMM_ARGLEN;
+  }
+}
+
+void sub(uint8_t instruction)
+{
+  uint8_t arg = 0;
+  uint16_t addr = 0;
+  // Determine arg
+  switch(instruction)
+  {
+    case SUB_AA:
+      arg = a_reg;
+      break;
+    case SUB_AB:
+      arg = b_reg;
+      break;
+    case SUB_AC:
+      arg = c_reg;
+      break;
+    case SUB_AD:
+      arg = d_reg;
+      break;
+    case SUB_AE:
+      arg = e_reg;
+      break;
+    case SUB_AH:
+      arg = h_reg;
+      break;
+    case SUB_AL: 
+      arg = l_reg;
+      break;
+    case SUB_A_IND:
+      addr = (((uint16_t) h_reg) << 8) | l_reg;
+      arg = readMemory(addr);
+      break;
+    case SUB_A_d8:
+      arg = readMemory(pc + 1);
+      break;
+  }
+  // Set flags
+  // Carry flag
+  if ((int)(a_reg) - (int)(arg) < 0)
+  {
+    flags |= 0x10;
+  }
+  // Set the n flag
+  flags |= 0x40;
+  // Half carry flag
+  if ((int)(a_reg & 0xf) - (int)(arg & 0xf) < 0)
+  {
+    flags |= 0x20;
+  }
+  if (a_reg - arg == 0)
+  {
+    flags |= 0x80;
+  }
+  a_reg -= arg;
+  if (instruction != ADD_A_d8)
+  {
+    pc += ALU_REG_ARGLEN;
+  }
+  else
+  {
+    pc += ALU_IMM_ARGLEN;
+  }
+}
+
+void sbc(uint8_t instruction)
+{
+  uint8_t arg = 0;
+  uint16_t addr = 0;
+  // Determine arg
+  switch(instruction)
+  {
+    case SBC_AA:
+      arg = a_reg;
+      break;
+    case SBC_AB:
+      arg = b_reg;
+      break;
+    case SBC_AC:
+      arg = c_reg;
+      break;
+    case SBC_AD:
+      arg = d_reg;
+      break;
+    case SBC_AE:
+      arg = e_reg;
+      break;
+    case SBC_AH:
+      arg = h_reg;
+      break;
+    case SBC_AL: 
+      arg = l_reg;
+      break;
+    case SBC_A_IND:
+      addr = (((uint16_t) h_reg) << 8) | l_reg;
+      arg = readMemory(addr);
+      break;
+    case SBC_A_d8:
+      arg = readMemory(pc + 1);
+      break;
+  }
+  // Add carry flag
+  if (flags & 0x80)
+    summand += 1;
+  // Set flags
+  // Carry flag
+  if ((int)(a_reg) - (int)(arg) < 0)
+  {
+    flags |= 0x10;
+  }
+  // Set the n flag
+  flags |= 0x40;
+  // Half carry flag
+  if ((int)(a_reg & 0xf) - (int)(arg & 0xf) < 0)
+  {
+    flags |= 0x20;
+  }
+  if (a_reg - arg == 0)
+  {
+    flags |= 0x80;
+  }
+  a_reg -= arg;
+  if (instruction != ADD_A_d8)
+  {
+    pc += ALU_REG_ARGLEN;
+  }
+  else
+  {
+    pc += ALU_IMM_ARGLEN;
+  }
 }
