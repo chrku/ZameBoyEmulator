@@ -1002,3 +1002,198 @@ void lxor(uint8_t instruction)
     pc += ALU_IMM_ARGLEN;
   }
 }
+
+void cp(uint8_t instruction)
+{
+  uint8_t arg = 0;
+  uint16_t addr = 0;
+  // Determine arg
+  switch(instruction)
+  {
+    case CP_AA:
+      arg = a_reg;
+      break;
+    case CP_AB:
+      arg = b_reg;
+      break;
+    case CP_AC:
+      arg = c_reg;
+      break;
+    case CP_AD:
+      arg = d_reg;
+      break;
+    case CP_AE:
+      arg = e_reg;
+      break;
+    case CP_AH:
+      arg = h_reg;
+      break;
+    case CP_AL: 
+      arg = l_reg;
+      break;
+    case CP_A_IND:
+      addr = (((uint16_t) h_reg) << 8) | l_reg;
+      arg = readMemory(addr);
+      break;
+    case CP_A_d8:
+      arg = readMemory(pc + 1);
+      break;
+  }
+  // Set flags
+  // Carry flag
+  if ((int)(a_reg) - (int)(arg) < 0)
+  {
+    flags |= 0x10;
+  }
+  else
+  {
+    flags &= ~(0x10);
+  }
+  // Set the n flag
+  flags |= 0x40;
+  // Half carry flag
+  if ((int)(a_reg & 0xf) - (int)(arg & 0xf) < 0)
+  {
+    flags |= 0x20;
+  }
+  else
+  {
+    flags &= ~(0x20);
+  }
+  if (a_reg - arg == 0)
+  {
+    flags |= 0x80;
+  }
+  else
+  {
+    flags &= ~(0x80);
+  }
+  if (instruction != CP_A_d8)
+  {
+    pc += ALU_REG_ARGLEN;
+  }
+  else
+  {
+    pc += ALU_IMM_ARGLEN;
+  }
+}
+
+void inc(uint8_t instruction)
+{
+  uint8_t value = 0;
+  uint16_t addr = 0;
+  switch(instruction)
+  {
+    case INC_A:
+      value = a_reg;
+      a_reg += 1;
+      break;
+    case INC_B:
+      value = b_reg;
+      b_reg += 1;
+      break;
+    case INC_C:
+      value = c_reg;
+      c_reg += 1;
+      break;
+    case INC_D:
+      value = d_reg;
+      d_reg += 1;
+      break;
+    case INC_E:
+      value = e_reg;
+      e_reg += 1;
+      break;
+    case INC_H:
+      value = h_reg;
+      h_reg += 1;
+      break;
+    case INC_L:
+      value = l_reg;
+      l_reg += 1;
+      break;
+    case INC_HL_IND:
+      addr = (((uint16_t) h_reg) << 8) | l_reg;
+      value = readMemory(addr);
+      writeMemory(addr, value + 1);
+      break;
+  }
+  if (value + 1 == 0)
+  {
+    flags |= 0x80;
+  }
+  else
+  {
+    flags &= ~(0x80);
+  }
+  flags &= ~(0x40);
+  if ((((value + 1) & 0xf) - 1) & 0x10)
+  {
+    flags |= 0x20;
+  }
+  else
+  {
+    flags &= ~(0x20);
+  }
+  pc += ALU_REG_ARGLEN;
+}
+
+void dec(uint8_t instruction)
+{
+  uint8_t value = 0;
+  uint16_t addr = 0;
+  switch(instruction)
+  {
+    case DEC_A:
+      value = a_reg;
+      a_reg -= 1;
+      break;
+    case DEC_B:
+      value = b_reg;
+      b_reg -= 1;
+      break;
+    case DEC_C:
+      value = c_reg;
+      c_reg -= 1;
+      break;
+    case DEC_D:
+      value = d_reg;
+      d_reg -= 1;
+      break;
+    case DEC_E:
+      value = e_reg;
+      e_reg -= 1;
+      break;
+    case DEC_H:
+      value = h_reg;
+      h_reg -= 1;
+      break;
+    case DEC_L:
+      value = l_reg;
+      l_reg -= 1;
+      break;
+    case DEC_HL_IND:
+      addr = (((uint16_t) h_reg) << 8) | l_reg;
+      value = readMemory(addr);
+      writeMemory(addr, value - 1);
+      break;
+  }
+  if (value - 1 == 0)
+  {
+    flags |= 0x80;
+  }
+  else
+  {
+    flags &= ~(0x80);
+  }
+  flags |= 0x40;
+  if ((int)(a_reg & 0xf) - 1 < 0)
+  {
+    flags |= 0x20;
+  }
+  else
+  {
+    flags &= ~(0x20);
+  }
+  pc += ALU_REG_ARGLEN;
+}

@@ -382,6 +382,43 @@
 #define XOR_A_IND 0xae
 #define XOR_A_d8 0xee
 
+// Compare
+
+#define CP_AA 0xbf
+#define CP_AB 0xb8
+#define CP_AC 0xb9
+#define CP_AD 0xba
+#define CP_AE 0xbb
+#define CP_AH 0xbc
+#define CP_AL 0xbd
+
+#define CP_A_IND 0xbe
+#define CP_A_d8 0xfe
+
+// Increment/decrement
+
+#define INC_DEC_HL_IND_CYCLES 8
+
+#define INC_A 0x3c
+#define INC_B 0x04
+#define INC_C 0x0c
+#define INC_D 0x14
+#define INC_E 0x1c
+#define INC_H 0x24
+#define INC_L 0x2c
+
+#define INC_HL_IND 0x34
+
+#define DEC_A 0x3d
+#define DEC_B 0x05
+#define DEC_C 0x0d
+#define DEC_D 0x15
+#define DEC_E 0x1d
+#define DEC_H 0x25
+#define DEC_L 0x2d
+
+#define DEC_HL_IND 0x35
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #endif // OPCODE_H

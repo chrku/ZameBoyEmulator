@@ -212,6 +212,33 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       else
         sleepCycles(ALU_OTHER_CYCLES);
       return SUCCESS;
+    // CP: Compare
+    case CP_AA: case CP_AB: case CP_AC: case CP_AD: case CP_AE: 
+    case CP_AH: case CP_AL: case CP_A_IND: case CP_A_d8:
+      cp(instruction);
+      if (instruction != CP_A_IND && instruction != CP_A_d8)
+        sleepCycles(ALU_REG_CYCLES);
+      else
+        sleepCycles(ALU_OTHER_CYCLES);
+      return SUCCESS;
+    // INC: Increment register
+    case INC_A: case INC_B: case INC_C: case INC_D: case INC_E: case INC_H:
+    case INC_L: case INC_HL_IND:
+      inc(instruction);
+      if (instruction != INC_HL_IND)
+        sleepCycles(ALU_REG_CYCLES);
+      else
+        sleepCycles(INC_DEC_HL_IND_CYCLES);
+      return SUCCESS;
+    // DEC: Decrement a register
+    case DEC_A: case DEC_B: case DEC_C: case DEC_D: case DEC_E: case DEC_H:
+    case DEC_L: case DEC_HL_IND:
+      dec(instruction);
+      if (instruction != DEC_HL_IND)
+        sleepCycles(ALU_REG_CYCLES);
+      else
+        sleepCycles(INC_DEC_HL_IND_CYCLES);
+      return SUCCESS;
     default:
       return -1;
   }

@@ -65,6 +65,18 @@ xor_reg_opcodes = {
     'A': 0xaf, 'B': 0xa8, 'C': 0xa9, 'D': 0xaa, 'E': 0xab, 'H': 0xac, 'L': 0xad
 }
 
+cp_reg_opcodes = {
+    'A': 0xbf, 'B': 0xb8, 'C': 0xb9, 'D': 0xba, 'E': 0xbb, 'H': 0xbc, 'L': 0xbd
+}
+
+inc_reg_opcodes = {
+    'A': 0x3c, 'B': 0x04, 'C': 0x0c, 'D': 0x14, 'E': 0x1c, 'H': 0x24, 'L': 0x2c
+}
+
+dec_reg_opcodes = {
+    'A': 0x3d, 'B': 0x05, 'C': 0x0d, 'D': 0x15, 'E': 0x1d, 'H': 0x25, 'L': 0x2d
+}
+
 def do_load(tokens, output_handle):
     """Handle load commands"""
     # Check if argument is register
@@ -256,6 +268,41 @@ def do_xor(tokens, output_handle):
     else:
         raise ValueError('Invalid instruction')
 
+
+def do_cp(tokens, output_handle):
+    parens = re.compile("([0-9]|[A-F]|[a-f]){2}")
+    if tokens[1] == 'A':
+        if tokens[2] in reg_list:
+            output_handle.write(struct.pack('B', cp_reg_opcodes[tokens[2]]))
+        elif tokens[2] == '(HL)':
+            output_handle.write(struct.pack('B', 0xbe))
+        elif parens.match(tokens[2]):
+            output_handle.write(struct.pack('B', 0xfe))
+            output_handle.write(struct.pack('B', int(tokens[2], 16)))
+        else:
+            raise ValueError('Invalid instruction')
+    else:
+        raise ValueError('Invalid instruction')
+
+
+def do_inc(tokens, output_handle):
+    if tokens[1] in reg_list:
+        output_handle.write(struct.pack('B', inc_reg_opcodes[tokens[1]]))
+    elif tokens[1] == '(HL)':
+        output_handle.write(struct.pack('B', 0x34))
+    else:
+        raise ValueError('Invalid instruction')
+
+
+def do_dec(tokens, output_handle):
+    if tokens[1] in reg_list:
+        output_handle.write(struct.pack('B', dec_reg_opcodes[tokens[1]]))
+    elif tokens[1] == '(HL)':
+        output_handle.write(struct.pack('B', 0x35))
+    else:
+        raise ValueError('Invalid instruction')
+
+
 def do_push(tokens, output_handle):
     if tokens[1] == 'AF':
         output_handle.write(struct.pack('B', 0xf5))
@@ -320,6 +367,12 @@ def assemble_GBA(input_file, output_file):
             do_or(tokens, output_handle)
         elif tokens[0] == 'XOR':
             do_xor(tokens, output_handle)
+        elif tokens[0] == 'CP':
+            do_cp(tokens, output_handle)
+        elif tokens[0] == 'INC':
+            do_inc(tokens, output_handle)
+        elif tokens[0] == 'DEC':
+            do_dec(tokens, output_handle)
         # Encode HALT as 0x76
         elif tokens[0] == 'HALT':
             output_handle.write(struct.pack('B', 0x76))

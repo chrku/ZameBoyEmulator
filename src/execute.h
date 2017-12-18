@@ -100,4 +100,13 @@ void lor(uint8_t instruction);
 /// Xor accumulator
 void lxor(uint8_t instruction);
 
+/// Compare accumulator
+void cp(uint8_t instruction);
+
+/// Increment accumulator
+void inc(uint8_t instruction);
+
+/// Decrement accumulator
+void dec(uint8_t instruction);
+
 #endif //EXECUTE_H
