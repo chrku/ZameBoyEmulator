@@ -1372,3 +1372,35 @@ void daa()
     flags &= ~0x80;
   pc += CB_ARGLEN;
 }
+
+void cpl()
+{
+  a_reg = ~a_reg;
+  flags |= 0x40;
+  flags |= 0x20;
+  pc += CB_ARGLEN;
+}
+
+void ccf()
+{
+  flags ^= 0x10;
+  flags &= ~0x40;
+  flags &= ~0x20;
+  pc += CB_ARGLEN; 
+}
+
+void stop()
+{
+  // TODO: Implement
+  pc += STOP_ARGLEN;
+}
+
+void ei()
+{
+  pc += CB_ARGLEN;
+}
+
+void di()
+{
+  pc += CB_ARGLEN;
+}

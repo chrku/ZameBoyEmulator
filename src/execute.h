@@ -127,4 +127,21 @@ void doSwap(uint8_t* arg, uint16_t addr);
 /// WTF?!?!?
 void daa();
 
+/// Complement A
+void cpl();
+
+/// Complement carry flag
+void ccf();
+
+/// Set carry flag
+void scf();
+
+void stop();
+
+/// Enable interrupts
+void ei();
+
+/// Disable interrupts
+void di();
+
 #endif //EXECUTE_H

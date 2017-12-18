@@ -26,6 +26,34 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       pc += 1;
       instruction = readMemory(pc);
       return decodeAndExecuteCB(instruction);
+    case DAA:
+      daa();
+      sleepCycles(DAA_CYCLES);
+      return SUCCESS;
+    case CPL:
+      cpl();
+      sleepCycles(CPL_CYCLES);
+      return SUCCESS;
+    case CCF:
+      ccf();
+      sleepCycles(CCF_CYCLES);
+      return SUCCESS;
+    case SCF:
+      scf();
+      sleepCycles(SCF_CYCLES);
+      return SUCCESS;
+    case STOP:
+      stop();
+      sleepCycles(MISC_CYCLES);
+      return SUCCESS;
+    case DI:
+      di();
+      sleepCycles(MISC_CYCLES);
+      return SUCCESS;
+    case EI:
+      ei();
+      sleepCycles(MISC_CYCLES);
+      return SUCCESS;
     ////////////////////////////////////////////////////////////////////////////
     // 8-bit loads
     // REGISTER-IMMEDIATE LOADS WITH 8-BIT IMMEDIATE ARGUMENT

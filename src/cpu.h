@@ -75,6 +75,20 @@ extern uint8_t e_reg;
 extern uint8_t h_reg;
 extern uint8_t l_reg;
 
+// IO Registers and IER
+
+// Interrupt enable register
+extern uint8_t ier;
+
+// Interrupt master flag
+extern uint8_t imf;
+
+// Disable/enable interrupts request flags
+extern uint8_t change_interrupt;
+
+#define ENABLE_INTERRUPTS 1
+#define DISABLE_INTERRUPTS 2
+
 // 16 bit registers
 
 extern uint16_t stack_ptr; // Stack pointer

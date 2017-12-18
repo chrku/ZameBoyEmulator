@@ -19,6 +19,11 @@ uint8_t h_reg = 0;
 uint8_t l_reg = 0;
 uint8_t flags = 0;
 
+// IO Registers
+uint8_t ier = 0;
+uint8_t imf = 0;
+uint8_t change_interrupt = 0;
+
 // Program counter
 uint16_t pc = START_LOCATION;
 

@@ -409,6 +409,21 @@ def assemble_GBA(input_file, output_file):
             do_dec(tokens, output_handle)
         elif tokens[0] == 'SWAP':
             do_swap(tokens, output_handle)
+        elif tokens[0] == 'DAA':
+            output_handle.write(struct.pack('B', 0x27))
+        elif tokens[0] == 'CPL':
+            output_handle.write(struct.pack('B', 0x2f))
+        elif tokens[0] == 'CCF':
+            output_handle.write(struct.pack('B', 0x3f))
+        elif tokens[0] == 'SCF':
+            output_handle.write(struct.pack('B', 0x37))
+        elif tokens[0] == 'STOP':
+            output_handle.write(struct.pack('B', 0x10))
+            output_handle.write(struct.pack('B', 0x00))
+        elif tokens[0] == 'DI':
+            output_handle.write(struct.pack('B', 0xfb))
+        elif tokens[0] == 'EI':
+            output_handle.write(struct.pack('B', 0xf3))
         # Encode HALT as 0x76
         elif tokens[0] == 'HALT':
             output_handle.write(struct.pack('B', 0x76))
