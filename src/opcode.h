@@ -420,5 +420,37 @@
 #define DEC_HL_IND 0x35
 
 ////////////////////////////////////////////////////////////////////////////////
+// 16-bit ALU //////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+#define ALU_16_REG_CYCLES 8
+#define ALU_16_REG_ARGLEN 1
+#define ALU_16_IMM_CYCLES 16
+#define ALU_16_IMM_ARGLEN 2
+
+// Adds
+#define ADD_BC 0x09
+#define ADD_DE 0x19
+#define ADD_HL 0x29
+#define ADD_SP 0x39
+
+// Add to SP
+#define ADD_SP_d8 0xe8
+
+// Incs
+#define INC_BC 0x03
+#define INC_DE 0x13
+#define INC_HL 0x23
+#define INC_SP 0x33
+
+// Decs
+
+#define DEC_BC 0x0b
+#define DEC_DE 0x1b
+#define DEC_HL 0x2b
+#define DEC_SP 0x3b
+
+
+////////////////////////////////////////////////////////////////////////////////
 
 #endif // OPCODE_H

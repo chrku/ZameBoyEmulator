@@ -239,6 +239,28 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       else
         sleepCycles(INC_DEC_HL_IND_CYCLES);
       return SUCCESS;
+    ////////////////////////////////////////////////////////////////////////////
+    // 16-bit ALU
+    // 16-bit ADD
+    case ADD_BC: case ADD_DE: case ADD_HL: case ADD_SP:
+      add16(instruction);
+      sleepCycles(ALU_16_REG_CYCLES);
+      return SUCCESS;
+    // Add immediate to SP
+    case ADD_SP_d8:
+      addSPN();
+      sleepCycles(ALU_16_IMM_CYCLES);
+      return SUCCESS;
+    // 16-bit incs
+    case INC_BC: case INC_DE: case INC_HL: case INC_SP:
+      inc16(instruction);
+      sleepCycles(ALU_16_REG_CYCLES);
+      return SUCCESS;
+    // 16-bit decs
+    case DEC_BC: case DEC_DE: case DEC_HL: case DEC_SP:
+      dec16(instruction);
+      sleepCycles(ALU_16_REG_CYCLES);
+      return SUCCESS;
     default:
       return -1;
   }

@@ -461,11 +461,15 @@ void doLoadHLSPN()
   l_reg = (uint8_t) value;
   flags = 0;
   // Check for carry
-  if (stack_ptr + offset > 0xffff)
+  if ((uint32_t) stack_ptr + offset > 0xffff)
     flags |= 0x20;
+  else
+    flags &= ~(0x20);
   // Check for half carry
   if ((stack_ptr & 0xfff) + (offset & 0xfff) > 0xfff)
     flags |= 0x10;
+  else
+    flags &= ~0x10;
   pc += LDHL_ARGLEN;
 }
 
@@ -1178,6 +1182,7 @@ void dec(uint8_t instruction)
       writeMemory(addr, value - 1);
       break;
   }
+  // Flag adjustments
   if (value - 1 == 0)
   {
     flags |= 0x80;
@@ -1196,4 +1201,120 @@ void dec(uint8_t instruction)
     flags &= ~(0x20);
   }
   pc += ALU_REG_ARGLEN;
+}
+
+void add16(uint8_t instruction)
+{
+  uint16_t dest = (((uint16_t) h_reg) << 8) | l_reg;
+  uint16_t arg = 0;
+  // Further decoding
+  switch(instruction)
+  {
+    case ADD_BC:
+      arg = (((uint16_t) b_reg) << 8) | c_reg;
+      break;
+    case ADD_DE:
+      arg = (((uint16_t) d_reg) << 8) | e_reg;
+      break;
+    case ADD_HL:
+      arg = (((uint16_t) h_reg) << 8) | l_reg;
+      break;
+    case ADD_SP:
+      arg = stack_ptr;
+      break;
+  }
+  // Flags
+  // Check for carry
+  if ((uint32_t) dest + arg > 0xffff)
+    flags |= 0x20;
+  else
+    flags &= ~(0x20);
+  // Check for half carry
+  if ((dest & 0xfff) + (arg & 0xfff) > 0xfff)
+    flags |= 0x10;
+  else
+    flags &= ~0x10;
+  flags &= ~0x40;
+  dest += arg;
+  h_reg = (uint8_t) (dest >> 8);
+  l_reg = (uint8_t) dest;
+  pc += ALU_16_REG_ARGLEN;
+}
+
+void addSPN()
+{
+  uint8_t imm = readMemory(pc + 1);
+  flags = 0;
+  // Check for carry
+  if ((uint32_t) stack_ptr + imm > 0xffff)
+    flags |= 0x20;
+  else
+    flags &= ~(0x20);
+  // Check for half carry
+  if ((stack_ptr & 0xfff) + (imm & 0xfff) > 0xfff)
+    flags |= 0x10;
+  else
+    flags &= ~0x10;
+  stack_ptr += imm;
+  pc += ALU_16_IMM_ARGLEN;
+}
+
+void inc16(uint8_t instruction)
+{
+  uint16_t val = 0;
+  switch(instruction)
+  {
+    case INC_BC:
+      val = (((uint16_t) b_reg) << 8) | c_reg;
+      val += 1;
+      b_reg = (uint8_t) (val >> 8);
+      c_reg = (uint8_t) val;
+      break;
+    case INC_DE:
+      val = (((uint16_t) d_reg) << 8) | e_reg;
+      val += 1;
+      d_reg = (uint8_t) (val >> 8);
+      e_reg = (uint8_t) val;
+      break;
+    case INC_HL:
+      val = (((uint16_t) h_reg) << 8) | l_reg;
+      val += 1;
+      h_reg = (uint8_t) (val >> 8);
+      l_reg = (uint8_t) val;
+      break;
+    case INC_SP:
+      stack_ptr += 1;
+      break;
+  }
+  pc += ALU_16_REG_ARGLEN;
+}
+
+void dec16(uint8_t instruction)
+{
+  uint16_t val = 0;
+  switch(instruction)
+  {
+    case DEC_BC:
+      val = (((uint16_t) b_reg) << 8) | c_reg;
+      val -= 1;
+      b_reg = (uint8_t) (val >> 8);
+      c_reg = (uint8_t) val;
+      break;
+    case DEC_DE:
+      val = (((uint16_t) d_reg) << 8) | e_reg;
+      val -= 1;
+      d_reg = (uint8_t) (val >> 8);
+      e_reg = (uint8_t) val;
+      break;
+    case DEC_HL:
+      val = (((uint16_t) h_reg) << 8) | l_reg;
+      val -= 1;
+      h_reg = (uint8_t) (val >> 8);
+      l_reg = (uint8_t) val;
+      break;
+    case DEC_SP:
+      stack_ptr -= 1;
+      break;
+  }
+  pc += ALU_16_REG_ARGLEN;
 }

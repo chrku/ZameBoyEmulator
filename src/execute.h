@@ -109,4 +109,16 @@ void inc(uint8_t instruction);
 /// Decrement accumulator
 void dec(uint8_t instruction);
 
+/// 16-bit add
+void add16(uint8_t instruction);
+
+/// Add immediate to SP
+void addSPN();
+
+/// 16-bit inc
+void inc16(uint8_t instruction);
+
+/// 16-bit dec
+void dec16(uint8_t instruction);
+
 #endif //EXECUTE_H

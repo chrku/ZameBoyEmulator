@@ -77,10 +77,21 @@ dec_reg_opcodes = {
     'A': 0x3d, 'B': 0x05, 'C': 0x0d, 'D': 0x15, 'E': 0x1d, 'H': 0x25, 'L': 0x2d
 }
 
+add16_opcodes = {
+    'BC': 0x09, 'DE': 0x19, 'HL': 0x29, 'SP': 0x39
+}
+
+inc16_opcodes = {
+    'BC': 0x03, 'DE': 0x13, 'HL': 0x23, 'SP': 0x33
+}
+
+dec16_opcodes = {
+    'BC': 0x0b, 'DE': 0x1b, 'HL': 0x2b, 'SP': 0x3b
+}
+
 def do_load(tokens, output_handle):
     """Handle load commands"""
     # Check if argument is register
-    print(tokens)
     parens = re.compile("\(([0-9]|[A-F]|[a-f]){4}\)")
     parens1 = re.compile("\(([0-9]|[A-F]|[a-f]){2}\)")
     imm = re.compile("([0-9]|[A-F]|[a-f]){4}")
@@ -174,6 +185,11 @@ def do_add(tokens, output_handle):
             output_handle.write(struct.pack('B', int(tokens[2], 16)))
         else:
             raise ValueError('Invalid instruction')
+    elif tokens[1] == 'HL' and tokens[2] in add16_opcodes:
+        output_handle.write(struct.pack('B', add16_opcodes[tokens[2]]))
+    elif tokens[1] == 'SP' and parens.match(tokens[2]):
+        output_handle.write(struct.pack('B', 0xe8))
+        output_handle.write(struct.pack('B', int(tokens[2], 16)))
     else:
         raise ValueError('Invalid instruction')
 
@@ -290,6 +306,8 @@ def do_inc(tokens, output_handle):
         output_handle.write(struct.pack('B', inc_reg_opcodes[tokens[1]]))
     elif tokens[1] == '(HL)':
         output_handle.write(struct.pack('B', 0x34))
+    elif tokens[1] in reg_comb_list:
+        output_handle.write(struct.pack('B', inc16_opcodes[tokens[1]]))
     else:
         raise ValueError('Invalid instruction')
 
@@ -299,6 +317,8 @@ def do_dec(tokens, output_handle):
         output_handle.write(struct.pack('B', dec_reg_opcodes[tokens[1]]))
     elif tokens[1] == '(HL)':
         output_handle.write(struct.pack('B', 0x35))
+    elif tokens[1] in reg_comb_list:
+        output_handle.write(struct.pack('B', dec16_opcodes[tokens[1]]))
     else:
         raise ValueError('Invalid instruction')
 
@@ -328,6 +348,7 @@ def do_pop(tokens, output_handle):
     else:
         raise ValueError('Invalid instruction')
 
+
 def assemble_GBA(input_file, output_file):
     """Assembles given GBA assembly file into a ROM output
     file. Raises errors if opcodes not found."""
@@ -342,6 +363,7 @@ def assemble_GBA(input_file, output_file):
         # Split and strip whitespace
         tokens = line.split(' ')
         tokens = [re.sub(pattern, '', x) for x in tokens]
+        print(tokens)
         # NOP get encoded as a zero byte
         if tokens[0] == 'NOP':
             output_handle.write(struct.pack('B', 0x0))
@@ -376,7 +398,6 @@ def assemble_GBA(input_file, output_file):
         # Encode HALT as 0x76
         elif tokens[0] == 'HALT':
             output_handle.write(struct.pack('B', 0x76))
-
 
 
 # Entry point to function
