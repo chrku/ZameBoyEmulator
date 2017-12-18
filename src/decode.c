@@ -22,6 +22,10 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       doHalt();
       sleepCycles(HALT_CYCLE_COUNT);
       return SUCCESS;
+    case CB:
+      pc += 1;
+      instruction = readMemory(pc);
+      return decodeAndExecuteCB(instruction);
     ////////////////////////////////////////////////////////////////////////////
     // 8-bit loads
     // REGISTER-IMMEDIATE LOADS WITH 8-BIT IMMEDIATE ARGUMENT
@@ -264,4 +268,51 @@ int decodeAndExecuteInstruction(uint8_t instruction)
     default:
       return -1;
   }
+}
+
+int decodeAndExecuteCB(uint8_t instruction)
+{
+  // Determine registers
+  uint8_t lower_nibble = (instruction & 0xf);
+  uint8_t* arg = NULL;
+  uint16_t addr = 0;
+  switch(lower_nibble)
+  {
+    case 0x0: case 0x8:
+      arg = &b_reg;
+      break;
+    case 0x1: case 0x9:
+      arg = &c_reg;
+      break;
+    case 0x2: case 0xa:
+      arg = &d_reg;
+      break;
+    case 0x3: case 0xb:
+      arg = &e_reg;
+      break;
+    case 0x4: case 0xc:
+      arg = &l_reg;
+      break;
+    case 0x5: case 0xd:
+      arg = &h_reg;
+      break;
+    case 0x6: case 0xe:
+      addr = (((uint16_t) h_reg) << 8) | l_reg;
+      arg = NULL;
+      break;
+    case 0x7: case 0xf:
+      arg = &a_reg;
+      break;
+  }
+  // Determine Opcode
+  if (instruction >= SWAP_LOWER && instruction <= SWAP_UPPER)
+  {
+    doSwap(arg, addr);
+    if (instruction == SWAP_INDIR)
+      sleepCycles(SWAP_CYCLES_ADDR);
+    else
+      sleepCycles(SWAP_CYCLES_REG);
+    return SUCCESS;
+  }
+  return SUCCESS;
 }

@@ -121,4 +121,10 @@ void inc16(uint8_t instruction);
 /// 16-bit dec
 void dec16(uint8_t instruction);
 
+/// Swap upper and lower nibbles
+void doSwap(uint8_t* arg, uint16_t addr);
+
+/// WTF?!?!?
+void daa();
+
 #endif //EXECUTE_H

@@ -1318,3 +1318,57 @@ void dec16(uint8_t instruction)
   }
   pc += ALU_16_REG_ARGLEN;
 }
+
+void doSwap(uint8_t* arg, uint16_t addr)
+{
+  uint8_t value;
+  flags = 0;
+  // If arg is NULL, we work with (HL)
+  if (arg == NULL)
+  {
+    value = readMemory(addr);
+    // Swap the nibbles
+    value = (((value & 0x0f) << 4) | ((value & 0xf0) >> 4));
+    writeMemory(addr, value);
+    if (value == 0)
+      flags |= 0x80;
+  }
+  else
+  {
+    *arg = ((*arg & 0x0f) << 4) | ((*arg & 0xf0) >> 4);
+    if (*arg == 0)
+      flags |= 0x80;
+  }
+  pc += CB_ARGLEN;
+}
+
+void daa()
+{
+  // https://www.worldofspectrum.org/faq/reference/z80reference.htm 
+  uint8_t correction_factor = 0;
+  if ((flags & 0x10) || (a_reg > 0x99))
+  {
+    correction_factor |= 0x60;
+    flags |= 0x10;
+  }
+  else
+  {
+    flags &= ~0x10;
+  }
+  if (((a_reg & 0x0f) > 0x09) || (flags & 0x20))
+  {
+    correction_factor |= 0x06; 
+  }
+
+  if (flags & 0x40)
+    a_reg += correction_factor;
+  else
+    a_reg -= correction_factor;
+  // Clear HC
+  flags &= ~0x20;
+  if (a_reg == 0)
+    flags |= 0x80;
+  else
+    flags &= ~0x80;
+  pc += CB_ARGLEN;
+}

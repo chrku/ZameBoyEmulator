@@ -89,6 +89,10 @@ dec16_opcodes = {
     'BC': 0x0b, 'DE': 0x1b, 'HL': 0x2b, 'SP': 0x3b
 }
 
+swap_opcodes = {
+    'A': 0x37, 'B': 0x30, 'C': 0x31, 'D': 0x32, 'E': 0x33, 'H': 0x34, 'L': 0x35, '(HL)': 0x36
+}
+
 def do_load(tokens, output_handle):
     """Handle load commands"""
     # Check if argument is register
@@ -269,6 +273,7 @@ def do_or(tokens, output_handle):
     else:
         raise ValueError('Invalid instruction')
 
+
 def do_xor(tokens, output_handle):
     parens = re.compile("([0-9]|[A-F]|[a-f]){2}")
     if tokens[1] == 'A':
@@ -281,6 +286,13 @@ def do_xor(tokens, output_handle):
             output_handle.write(struct.pack('B', int(tokens[2], 16)))
         else:
             raise ValueError('Invalid instruction')
+    else:
+        raise ValueError('Invalid instruction')
+
+def do_swap(tokens, output_handle):
+    output_handle.write(struct.pack('B', 0xcb))
+    if tokens[1] in swap_opcodes:
+        output_handle.write(struct.pack('B', swap_opcodes[tokens[1]]))
     else:
         raise ValueError('Invalid instruction')
 
@@ -395,6 +407,8 @@ def assemble_GBA(input_file, output_file):
             do_inc(tokens, output_handle)
         elif tokens[0] == 'DEC':
             do_dec(tokens, output_handle)
+        elif tokens[0] == 'SWAP':
+            do_swap(tokens, output_handle)
         # Encode HALT as 0x76
         elif tokens[0] == 'HALT':
             output_handle.write(struct.pack('B', 0x76))
