@@ -586,6 +586,10 @@ void add(uint8_t instruction)
   {
     flags |= 0x10;
   }
+  else
+  {
+    flags &= ~(0x10);
+  }
   // Clear the n flag
   flags &= ~(0x40);
   // Half carry flag
@@ -593,9 +597,17 @@ void add(uint8_t instruction)
   {
     flags |= 0x20;
   }
+  else
+  {
+    flags &= ~(0x20);
+  }
   if (a_reg + summand == 0)
   {
     flags |= 0x80;
+  }
+  else
+  {
+    flags &= ~(0x80);
   }
   a_reg += summand;
   if (instruction != ADD_A_d8)
@@ -645,13 +657,17 @@ void adc(uint8_t instruction)
       break;
   }
   // Add carry flag
-  if (flags & 0x80)
+  if (flags & 0x10)
     summand += 1;
   // Set flags
   // Carry flag
   if (((uint16_t) a_reg) + summand > 0xff)
   {
     flags |= 0x10;
+  }
+  else
+  {
+    flags &= ~(0x10);
   }
   // Clear the n flag
   flags &= ~(0x40);
@@ -660,9 +676,17 @@ void adc(uint8_t instruction)
   {
     flags |= 0x20;
   }
+  else
+  {
+    flags &= ~(0x20);
+  }
   if (a_reg + summand == 0)
   {
     flags |= 0x80;
+  }
+  else
+  {
+    flags &= ~(0x80);
   }
   a_reg += summand;
   if (instruction != ADD_A_d8)
@@ -717,6 +741,10 @@ void sub(uint8_t instruction)
   {
     flags |= 0x10;
   }
+  else
+  {
+    flags &= ~(0x10);
+  }
   // Set the n flag
   flags |= 0x40;
   // Half carry flag
@@ -724,9 +752,17 @@ void sub(uint8_t instruction)
   {
     flags |= 0x20;
   }
+  else
+  {
+    flags &= ~(0x20);
+  }
   if (a_reg - arg == 0)
   {
     flags |= 0x80;
+  }
+  else
+  {
+    flags &= ~(0x80);
   }
   a_reg -= arg;
   if (instruction != ADD_A_d8)
@@ -771,18 +807,18 @@ void sbc(uint8_t instruction)
       addr = (((uint16_t) h_reg) << 8) | l_reg;
       arg = readMemory(addr);
       break;
-    case SBC_A_d8:
-      arg = readMemory(pc + 1);
-      break;
   }
   // Add carry flag
-  if (flags & 0x80)
-    summand += 1;
-  // Set flags
-  // Carry flag
+  if (flags & 0x10)
+    arg += 1;
+  // Flags
   if ((int)(a_reg) - (int)(arg) < 0)
   {
     flags |= 0x10;
+  }
+  else
+  {
+    flags &= ~(0x10);
   }
   // Set the n flag
   flags |= 0x40;
@@ -791,17 +827,18 @@ void sbc(uint8_t instruction)
   {
     flags |= 0x20;
   }
+  else
+  {
+    flags &= ~(0x20);
+  }
   if (a_reg - arg == 0)
   {
     flags |= 0x80;
   }
-  a_reg -= arg;
-  if (instruction != ADD_A_d8)
-  {
-    pc += ALU_REG_ARGLEN;
-  }
   else
   {
-    pc += ALU_IMM_ARGLEN;
+    flags &= ~(0x80);
   }
+  a_reg -= arg;
+  pc += ALU_REG_ARGLEN;
 }

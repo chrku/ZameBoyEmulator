@@ -178,9 +178,9 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       return SUCCESS;
     // SBC: Sub with carry
     case SBC_AA: case SBC_AB: case SBC_AC: case SBC_AD: case SBC_AE:
-    case SBC_AH: case SBC_AL: case SBC_A_IND: case SBC_A_d8:
+    case SBC_AH: case SBC_AL: case SBC_A_IND:
       sbc(instruction);
-      if (instruction != SBC_A_IND && instruction != SBC_A_d8)
+      if (instruction != SBC_A_IND)
         sleepCycles(ALU_REG_CYCLES);
       else
         sleepCycles(ALU_OTHER_CYCLES);

@@ -251,7 +251,7 @@ def assemble_GBA(input_file, output_file):
         elif tokens[0] == 'ADD':
             do_add(tokens, output_handle)
         elif tokens[0] == 'ADC':
-            do_add(tokens, output_handle)
+            do_adc(tokens, output_handle)
         elif tokens[0] == 'SUB':
             do_sub(tokens, output_handle)
         elif tokens[0] == 'SBC':

@@ -295,7 +295,7 @@
 // Immediate/Indirect memory
 
 #define ALU_OTHER_CYCLES 8
-#define ADD_IMM_ARGLEN 2
+#define ALU_IMM_ARGLEN 2
 
 #define ADD_A_IND 0x86
 #define ADD_A_d8 0xc6
