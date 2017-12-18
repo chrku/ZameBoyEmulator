@@ -689,7 +689,7 @@ void adc(uint8_t instruction)
     flags &= ~(0x80);
   }
   a_reg += summand;
-  if (instruction != ADD_A_d8)
+  if (instruction != ADC_A_d8)
   {
     pc += ALU_REG_ARGLEN;
   }
@@ -765,7 +765,7 @@ void sub(uint8_t instruction)
     flags &= ~(0x80);
   }
   a_reg -= arg;
-  if (instruction != ADD_A_d8)
+  if (instruction != SUB_A_d8)
   {
     pc += ALU_REG_ARGLEN;
   }
@@ -841,4 +841,164 @@ void sbc(uint8_t instruction)
   }
   a_reg -= arg;
   pc += ALU_REG_ARGLEN;
+}
+
+void land(uint8_t instruction)
+{
+  uint8_t arg = 0;
+  uint16_t addr = 0;
+  // Determine arg
+  switch(instruction)
+  {
+    case AND_AA:
+      arg = a_reg;
+      break;
+    case AND_AB:
+      arg = b_reg;
+      break;
+    case AND_AC:
+      arg = c_reg;
+      break;
+    case AND_AD:
+      arg = d_reg;
+      break;
+    case AND_AE:
+      arg = e_reg;
+      break;
+    case AND_AH:
+      arg = h_reg;
+      break;
+    case AND_AL: 
+      arg = l_reg;
+      break;
+    case AND_A_IND:
+      addr = (((uint16_t) h_reg) << 8) | l_reg;
+      arg = readMemory(addr);
+      break;
+    case AND_A_d8:
+      arg = readMemory(pc + 1);
+      break;
+  }
+  // Flags
+  flags = 0;
+  if (!(a_reg & arg))
+  {
+    flags |= 0x80;
+  }
+  flags |= 0x20;
+  a_reg &= arg;
+  if (instruction != AND_A_d8)
+  {
+    pc += ALU_REG_ARGLEN;
+  }
+  else
+  {
+    pc += ALU_IMM_ARGLEN;
+  }
+}
+
+void lor(uint8_t instruction)
+{
+  uint8_t arg = 0;
+  uint16_t addr = 0;
+  // Determine arg
+  switch(instruction)
+  {
+    case OR_AA:
+      arg = a_reg;
+      break;
+    case OR_AB:
+      arg = b_reg;
+      break;
+    case OR_AC:
+      arg = c_reg;
+      break;
+    case OR_AD:
+      arg = d_reg;
+      break;
+    case OR_AE:
+      arg = e_reg;
+      break;
+    case OR_AH:
+      arg = h_reg;
+      break;
+    case OR_AL: 
+      arg = l_reg;
+      break;
+    case OR_A_IND:
+      addr = (((uint16_t) h_reg) << 8) | l_reg;
+      arg = readMemory(addr);
+      break;
+    case OR_A_d8:
+      arg = readMemory(pc + 1);
+      break;
+  }
+  // Flags
+  flags = 0;
+  if (!(a_reg | arg))
+  {
+    flags |= 0x80;
+  }
+  a_reg |= arg;
+  if (instruction != OR_A_d8)
+  {
+    pc += ALU_REG_ARGLEN;
+  }
+  else
+  {
+    pc += ALU_IMM_ARGLEN;
+  }
+}
+
+void lxor(uint8_t instruction)
+{
+  uint8_t arg = 0;
+  uint16_t addr = 0;
+  // Determine arg
+  switch(instruction)
+  {
+    case XOR_AA:
+      arg = a_reg;
+      break;
+    case XOR_AB:
+      arg = b_reg;
+      break;
+    case XOR_AC:
+      arg = c_reg;
+      break;
+    case XOR_AD:
+      arg = d_reg;
+      break;
+    case XOR_AE:
+      arg = e_reg;
+      break;
+    case XOR_AH:
+      arg = h_reg;
+      break;
+    case XOR_AL: 
+      arg = l_reg;
+      break;
+    case XOR_A_IND:
+      addr = (((uint16_t) h_reg) << 8) | l_reg;
+      arg = readMemory(addr);
+      break;
+    case XOR_A_d8:
+      arg = readMemory(pc + 1);
+      break;
+  }
+  // Flags
+  flags = 0;
+  if (!(a_reg ^ arg))
+  {
+    flags |= 0x80;
+  }
+  a_reg ^= arg;
+  if (instruction != XOR_A_d8)
+  {
+    pc += ALU_REG_ARGLEN;
+  }
+  else
+  {
+    pc += ALU_IMM_ARGLEN;
+  }
 }

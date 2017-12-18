@@ -38,19 +38,31 @@ acc_to_reg_indirect = {
 }
 
 add_reg_opcodes = {
-    'A' : 0x87, 'B': 0x80, 'C': 0x81, 'D': 0x82, 'E': 0x83, 'H': 0x84, 'L': 0x85
+    'A': 0x87, 'B': 0x80, 'C': 0x81, 'D': 0x82, 'E': 0x83, 'H': 0x84, 'L': 0x85
 }
 
 adc_reg_opcodes = {
-    'A' : 0x8f, 'B': 0x88, 'C': 0x89, 'D': 0x8a, 'E': 0x8b, 'H': 0x8c, 'L': 0x8d
+    'A': 0x8f, 'B': 0x88, 'C': 0x89, 'D': 0x8a, 'E': 0x8b, 'H': 0x8c, 'L': 0x8d
 }
 
 sub_reg_opcodes = {
-    'A' : 0x97, 'B': 0x90, 'C': 0x91, 'D': 0x92, 'E': 0x93, 'H': 0x94, 'L': 0x95
+    'A': 0x97, 'B': 0x90, 'C': 0x91, 'D': 0x92, 'E': 0x93, 'H': 0x94, 'L': 0x95
 }
 
 sbc_reg_opcodes = {
-    'A' : 0x9f, 'B': 0x98, 'C': 0x99, 'D': 0x9a, 'E': 0x9b, 'H': 0x9c, 'L': 0x9d
+    'A': 0x9f, 'B': 0x98, 'C': 0x99, 'D': 0x9a, 'E': 0x9b, 'H': 0x9c, 'L': 0x9d
+}
+
+and_reg_opcodes = {
+    'A': 0xa7, 'B': 0xa0, 'C': 0xa1, 'D': 0xa2, 'E': 0xa3, 'H': 0xa4, 'L': 0xa5
+}
+
+or_reg_opcodes = {
+    'A': 0xb7, 'B': 0xb0, 'C': 0xb1, 'D': 0xb2, 'E': 0xb3, 'H': 0xb4, 'L': 0xb5
+}
+
+xor_reg_opcodes = {
+    'A': 0xaf, 'B': 0xa8, 'C': 0xa9, 'D': 0xaa, 'E': 0xab, 'H': 0xac, 'L': 0xad
 }
 
 def do_load(tokens, output_handle):
@@ -198,6 +210,52 @@ def do_sbc(tokens, output_handle):
         raise ValueError('Invalid instruction')
 
 
+def do_and(tokens, output_handle):
+    parens = re.compile("([0-9]|[A-F]|[a-f]){2}")
+    if tokens[1] == 'A':
+        if tokens[2] in reg_list:
+            output_handle.write(struct.pack('B', and_reg_opcodes[tokens[2]]))
+        elif tokens[2] == '(HL)':
+            output_handle.write(struct.pack('B', 0xa6))
+        elif parens.match(tokens[2]):
+            output_handle.write(struct.pack('B', 0xe6))
+            output_handle.write(struct.pack('B', int(tokens[2], 16)))
+        else:
+            raise ValueError('Invalid instruction')
+    else:
+        raise ValueError('Invalid instruction')
+
+
+def do_or(tokens, output_handle):
+    parens = re.compile("([0-9]|[A-F]|[a-f]){2}")
+    if tokens[1] == 'A':
+        if tokens[2] in reg_list:
+            output_handle.write(struct.pack('B', or_reg_opcodes[tokens[2]]))
+        elif tokens[2] == '(HL)':
+            output_handle.write(struct.pack('B', 0xb6))
+        elif parens.match(tokens[2]):
+            output_handle.write(struct.pack('B', 0xf6))
+            output_handle.write(struct.pack('B', int(tokens[2], 16)))
+        else:
+            raise ValueError('Invalid instruction')
+    else:
+        raise ValueError('Invalid instruction')
+
+def do_xor(tokens, output_handle):
+    parens = re.compile("([0-9]|[A-F]|[a-f]){2}")
+    if tokens[1] == 'A':
+        if tokens[2] in reg_list:
+            output_handle.write(struct.pack('B', xor_reg_opcodes[tokens[2]]))
+        elif tokens[2] == '(HL)':
+            output_handle.write(struct.pack('B', 0xae))
+        elif parens.match(tokens[2]):
+            output_handle.write(struct.pack('B', 0xee))
+            output_handle.write(struct.pack('B', int(tokens[2], 16)))
+        else:
+            raise ValueError('Invalid instruction')
+    else:
+        raise ValueError('Invalid instruction')
+
 def do_push(tokens, output_handle):
     if tokens[1] == 'AF':
         output_handle.write(struct.pack('B', 0xf5))
@@ -256,6 +314,12 @@ def assemble_GBA(input_file, output_file):
             do_sub(tokens, output_handle)
         elif tokens[0] == 'SBC':
             do_sbc(tokens, output_handle)
+        elif tokens[0] == 'AND':
+            do_and(tokens, output_handle)
+        elif tokens[0] == 'OR':
+            do_or(tokens, output_handle)
+        elif tokens[0] == 'XOR':
+            do_xor(tokens, output_handle)
         # Encode HALT as 0x76
         elif tokens[0] == 'HALT':
             output_handle.write(struct.pack('B', 0x76))

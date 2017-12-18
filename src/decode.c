@@ -185,6 +185,33 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       else
         sleepCycles(ALU_OTHER_CYCLES);
       return SUCCESS;
+    // AND: Logical AND
+    case AND_AA: case AND_AB: case AND_AC: case AND_AD: case AND_AE: 
+    case AND_AH: case AND_AL: case AND_A_IND: case AND_A_d8:
+      land(instruction);
+      if (instruction != AND_A_IND && instruction != AND_A_d8)
+        sleepCycles(ALU_REG_CYCLES);
+      else
+        sleepCycles(ALU_OTHER_CYCLES);
+      return SUCCESS;
+    // OR: logical OR
+    case OR_AA: case OR_AB: case OR_AC: case OR_AD: case OR_AE: 
+    case OR_AH: case OR_AL: case OR_A_IND: case OR_A_d8:
+      lor(instruction);
+      if (instruction != OR_A_IND && instruction != OR_A_d8)
+        sleepCycles(ALU_REG_CYCLES);
+      else
+        sleepCycles(ALU_OTHER_CYCLES);
+      return SUCCESS;
+    // XOR: logical XOR
+    case XOR_AA: case XOR_AB: case XOR_AC: case XOR_AD: case XOR_AE: 
+    case XOR_AH: case XOR_AL: case XOR_A_IND: case XOR_A_d8:
+      lxor(instruction);
+      if (instruction != XOR_A_IND && instruction != XOR_A_d8)
+        sleepCycles(ALU_REG_CYCLES);
+      else
+        sleepCycles(ALU_OTHER_CYCLES);
+      return SUCCESS;
     default:
       return -1;
   }

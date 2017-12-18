@@ -343,6 +343,45 @@
 
 #define SBC_A_IND 0x9e
 
+// AND Logical and
+
+#define AND_AA 0xa7
+#define AND_AB 0xa0
+#define AND_AC 0xa1
+#define AND_AD 0xa2
+#define AND_AE 0xa3
+#define AND_AH 0xa4
+#define AND_AL 0xa5
+
+#define AND_A_IND 0xa6
+#define AND_A_d8 0xe6
+
+// Logical OR
+
+#define OR_AA 0xb7
+#define OR_AB 0xb0
+#define OR_AC 0xb1
+#define OR_AD 0xb2
+#define OR_AE 0xb3
+#define OR_AH 0xb4
+#define OR_AL 0xb5
+
+#define OR_A_IND 0xb6
+#define OR_A_d8 0xf6
+
+// Logical XOR
+
+#define XOR_AA 0xaf
+#define XOR_AB 0xa8
+#define XOR_AC 0xa9
+#define XOR_AD 0xaa
+#define XOR_AE 0xab
+#define XOR_AH 0xac
+#define XOR_AL 0xad
+
+#define XOR_A_IND 0xae
+#define XOR_A_d8 0xee
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #endif // OPCODE_H

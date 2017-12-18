@@ -91,4 +91,13 @@ void sub(uint8_t instruction);
 /// Subtract accumulator with carry
 void sbc(uint8_t instruction);
 
+/// And accumulator
+void land(uint8_t instruction);
+
+/// Or accumultor
+void lor(uint8_t instruction);
+
+/// Xor accumulator
+void lxor(uint8_t instruction);
+
 #endif //EXECUTE_H
