@@ -123,7 +123,10 @@ uint8_t readMemory(uint16_t addr)
   }
   else if (addr >= IO_REGS_LOWER && addr <= IO_REGS_UPPER)
   {
-    return IO_PORTS[addr - IO_REGS_LOWER];
+    if (addr == DMA_REG)
+      return 0xff;
+    else
+      return IO_PORTS[addr - IO_REGS_LOWER];
   }
   else 
   {
@@ -181,7 +184,10 @@ int writeMemory(uint16_t addr, uint8_t data)
   }
   else if (addr >= IO_REGS_LOWER && addr <= IO_REGS_UPPER)
   {
-    IO_PORTS[addr - IO_REGS_LOWER] = data;
+    if (addr == DMA_REG)
+      executeDMA(data);
+    else
+      IO_PORTS[addr - IO_REGS_LOWER] = data;
     return SUCCESS;
   }
   else 
@@ -222,10 +228,20 @@ void startExecutionGB()
   {
     instruction = readMemory(pc);
     decodeAndExecuteInstruction(instruction);
+    doGraphics();
 
 #ifdef DEBUG
   printRegisters();
   dbg = getchar();
 #endif
+  }
+}
+
+void executeDMA(uint8_t data)
+{
+  uint16_t addr = data << 8;
+  for (int i = 0; i < 160; ++i)
+  {
+    writeMemory(0xfe00 + i, readMemory(addr + i));
   }
 }

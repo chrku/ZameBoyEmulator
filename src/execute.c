@@ -1965,5 +1965,5 @@ void reti()
   stack_ptr += 1;
   higher = readMemory(stack_ptr);
   pc = (((uint16_t) higher) << 8) | lower;
-  di();
+  ei();
 }

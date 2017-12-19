@@ -23,13 +23,17 @@
 // Size of the VRAM of the original game boy
 #define GB_VRAM_SIZE 8000
 // Size of the ROM memory segment
-#define GB_ROM_SIZE 32000
+#define GB_ROM_SIZE 0x200000
 // Cartridge RAM
 #define CARTRIDGE_ROM_SIZE 8000
 // Working RAM
 #define WORK_RAM_SIZE 127
 
 #define START_LOCATION 0x100
+
+ #define TIMA 0xFF05
+#define TMA 0xFF06
+#define TMC 0xFF07 
 
 ////////////////////////////////////////////////////////////////////////////////
 // INITIAL VALUES FOR REGISTERS ////////////////////////////////////////////////
@@ -73,6 +77,9 @@
 #define RUNNING 1
 #define OFF 0
 #define WRITE_ERROR 2
+
+// Register to initiate DMA transfer
+#define DMA_REG 0xff46
 
 
 // Registers
@@ -163,5 +170,7 @@ uint8_t readMemory(uint16_t addr);
 /// @param data data to be written
 /// @return int error code
 int writeMemory(uint16_t addr, uint8_t data);
+
+void executeDMA(uint8_t data);
 
 #endif // CPU_H

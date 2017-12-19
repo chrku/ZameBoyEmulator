@@ -10,4 +10,6 @@ void printRegisters()
   // Flags, stack pointer and program counter
   printf("Flags: %hhx; Stack pointer: %hx; Program counter: %hx;\n",
       flags, stack_ptr, pc);
+  // Cycle counter
+  printf("Cycle counter: %llx;\n", cycle_counter);
 }
