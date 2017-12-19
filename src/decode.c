@@ -54,6 +54,99 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       ei();
       sleepCycles(MISC_CYCLES);
       return SUCCESS;
+    case JP:
+      jumpImm();
+      sleepCycles(JP_CYCLES);
+      return SUCCESS;
+    case JPNZ:
+      jumpImmNZ();
+      sleepCycles(JP_CYCLES);
+      return SUCCESS;
+    case JPZ:
+      jumpImmZ();
+      sleepCycles(JP_CYCLES);
+      return SUCCESS;
+    case JPNC:
+      jumpImmNC();
+      sleepCycles(JP_CYCLES);
+      return SUCCESS;
+    case JPC:
+      jumpImmC();
+      sleepCycles(JP_CYCLES);
+      return SUCCESS;
+    case JPHL:
+      jumpHL();
+      sleepCycles(JPHL_CYCLES);
+      return SUCCESS;
+    case JR:
+      jr();
+      sleepCycles(JR_CYCLES);
+      return SUCCESS;
+    case JRNZ:
+      jrNZ();
+      sleepCycles(JR_CYCLES);
+      return SUCCESS;
+    case JRZ:
+      jrZ();
+      sleepCycles(JR_CYCLES);
+      return SUCCESS;
+    case JRNC:
+      jrNC();
+      sleepCycles(JR_CYCLES);
+      return SUCCESS;
+    case JRC:
+      jrC();
+      sleepCycles(JR_CYCLES);
+      return SUCCESS;
+    case CALL:
+      call();
+      sleepCycles(CALL_CYCLES);
+      return SUCCESS;
+    case CALLNZ:
+      callNZ();
+      sleepCycles(CALL_CYCLES);
+      return SUCCESS;
+    case CALLC:
+      callC();
+      sleepCycles(CALL_CYCLES);
+      return SUCCESS;
+    case CALLNC:
+      callNC();
+      sleepCycles(CALL_CYCLES);
+      return SUCCESS;
+    case CALLZ:
+      callZ();
+      sleepCycles(CALL_CYCLES);
+      return SUCCESS;
+    case RET:
+      ret();
+      sleepCycles(RET_CYCLES);
+      return SUCCESS;
+    case RETZ:
+      retZ();
+      sleepCycles(RET_CYCLES);
+      return SUCCESS;
+    case RETC:
+      retC();
+      sleepCycles(RET_CYCLES);
+      return SUCCESS;
+    case RETNC:
+      retNC();
+      sleepCycles(RET_CYCLES);
+      return SUCCESS;
+    case RETNZ:
+      retNZ();
+      sleepCycles(RET_CYCLES);
+      return SUCCESS;
+    case RETI:
+      reti();
+      sleepCycles(RET_CYCLES);
+      return SUCCESS;
+    case RST_0: case RST_8: case RST_10: case RST_18: case RST_20:
+    case RST_28: case RST_30: case RST_38:
+      rst(instruction);
+      sleepCycles(RST_CYCLES);
+      return SUCCESS;
     ////////////////////////////////////////////////////////////////////////////
     // 8-bit loads
     // REGISTER-IMMEDIATE LOADS WITH 8-BIT IMMEDIATE ARGUMENT
@@ -271,6 +364,22 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       else
         sleepCycles(INC_DEC_HL_IND_CYCLES);
       return SUCCESS;
+    case RLCA:
+      rlc(&a_reg, 0);
+      sleepCycles(RLCA_CYCLES);
+      return SUCCESS;
+    case RLA:
+      rl(&a_reg, 0);
+      sleepCycles(RLA_CYCLES);
+      return SUCCESS;
+    case RRCA:
+      rrc(&a_reg, 0);
+      sleepCycles(RRCA_CYCLES);
+      return SUCCESS;
+    case RRA:
+      rr(&a_reg, 0);
+      sleepCycles(RRA_CYCLES);
+      return SUCCESS;
     ////////////////////////////////////////////////////////////////////////////
     // 16-bit ALU
     // 16-bit ADD
@@ -303,6 +412,7 @@ int decodeAndExecuteCB(uint8_t instruction)
   // Determine registers
   uint8_t lower_nibble = (instruction & 0xf);
   uint8_t* arg = NULL;
+  uint8_t bit_no;
   uint16_t addr = 0;
   switch(lower_nibble)
   {
@@ -342,5 +452,95 @@ int decodeAndExecuteCB(uint8_t instruction)
       sleepCycles(SWAP_CYCLES_REG);
     return SUCCESS;
   }
-  return SUCCESS;
+  else if (instruction >= RLC_LOWER && instruction <= RLC_UPPER)
+  {
+    rlc(arg, addr);
+    if (instruction == RLC_INDIR)
+      sleepCycles(CB_CYCLES_ADDR);
+    else
+      sleepCycles(CB_CYCLES_REG);
+    return SUCCESS;
+  }
+  else if (instruction >= RL_LOWER && instruction <= RL_UPPER)
+  {
+    rl(arg, addr);
+    if (instruction == RL_INDIR)
+      sleepCycles(CB_CYCLES_ADDR);
+    else
+      sleepCycles(CB_CYCLES_REG);
+    return SUCCESS;
+  }
+  else if (instruction >= RRC_LOWER && instruction <= RRC_UPPER)
+  {
+    rrc(arg, addr);
+    if (instruction == RRC_INDIR)
+      sleepCycles(CB_CYCLES_ADDR);
+    else
+      sleepCycles(CB_CYCLES_REG);
+    return SUCCESS;
+  }
+  else if (instruction >= RR_LOWER && instruction <= RR_UPPER)
+  {
+    rr(arg, addr);
+    if (instruction == RR_INDIR)
+      sleepCycles(CB_CYCLES_ADDR);
+    else
+      sleepCycles(CB_CYCLES_REG);
+    return SUCCESS;
+  }
+  else if (instruction >= SLA_LOWER && instruction <= SLA_UPPER)
+  {
+    sla(arg, addr);
+    if (instruction == SLA_INDIR)
+      sleepCycles(CB_CYCLES_ADDR);
+    else
+      sleepCycles(CB_CYCLES_REG);
+    return SUCCESS;
+  }
+  else if (instruction >= SRA_LOWER && instruction <= SRA_UPPER)
+  {
+    sra(arg, addr);
+    if (instruction == SRA_INDIR)
+      sleepCycles(CB_CYCLES_ADDR);
+    else
+      sleepCycles(CB_CYCLES_REG);
+    return SUCCESS;
+  }
+  else if (instruction >= SRL_LOWER && instruction <= SRL_UPPER)
+  {
+    srl(arg, addr);
+    if (instruction == SRL_INDIR)
+      sleepCycles(CB_CYCLES_ADDR);
+    else
+      sleepCycles(CB_CYCLES_REG);
+    return SUCCESS;
+  }
+  else if (instruction >= BIT_LOWER && instruction <= BIT_UPPER)
+  {
+    bit_no = (((instruction - BIT_LOWER) + 1) / 8);
+    bit(arg, addr, bit_no);
+    if (arg == NULL)
+      sleepCycles(CB_CYCLES_ADDR);
+    else
+      sleepCycles(CB_CYCLES_REG);
+  }
+  else if (instruction >= RES_LOWER && instruction <= RES_UPPER)
+  {
+    bit_no = (((instruction - RES_LOWER) + 1) / 8);
+    res(arg, addr, bit_no);
+    if (arg == NULL)
+      sleepCycles(CB_CYCLES_ADDR);
+    else
+      sleepCycles(CB_CYCLES_REG);
+  }
+  else if (instruction >= SET_LOWER && instruction <= SET_UPPER)
+  {
+    bit_no = (((instruction - SET_LOWER) + 1) / 8);
+    set(arg, addr, bit_no);
+    if (arg == NULL)
+      sleepCycles(CB_CYCLES_ADDR);
+    else
+      sleepCycles(CB_CYCLES_REG);
+  }
+  return -1;
 }

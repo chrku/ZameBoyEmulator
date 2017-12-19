@@ -144,4 +144,70 @@ void ei();
 /// Disable interrupts
 void di();
 
+void rlc(uint8_t* arg, uint16_t addr);
+
+void rl(uint8_t* arg, uint16_t addr);
+
+void rrc(uint8_t* arg, uint16_t addr);
+
+void rr(uint8_t* arg, uint16_t addr);
+
+void sla(uint8_t* arg, uint16_t addr);
+
+void sra(uint8_t* arg, uint16_t addr);
+
+void srl(uint8_t* arg, uint16_t addr);
+
+void bit(uint8_t* arg, uint16_t addr, uint8_t bit);
+
+void set(uint8_t* arg, uint16_t addr, uint8_t bit);
+
+void res(uint8_t* arg, uint16_t addr, uint8_t bit);
+
+void jumpImm();
+
+void jumpImmZ();
+
+void jumpImmNZ();
+
+void jumpImmC();
+
+void jumpImmNC();
+
+void jumpHL();
+
+void jr();
+
+void jrNZ();
+
+void jrZ();
+
+void jrC();
+
+void jrNC();
+
+void call();
+
+void callNZ();
+
+void callZ();
+
+void callNC();
+
+void callC();
+
+void rst(uint8_t instruction);
+
+void ret();
+
+void retNZ();
+
+void retZ();
+
+void retC();
+
+void retNC();
+
+void reti();
+
 #endif //EXECUTE_H

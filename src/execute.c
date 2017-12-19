@@ -1389,6 +1389,14 @@ void ccf()
   pc += CB_ARGLEN; 
 }
 
+void scf()
+{ 
+  flags |= 0x10;
+  flags &= ~0x40;
+  flags &= ~0x20;
+  pc += CB_ARGLEN;
+}
+
 void stop()
 {
   // TODO: Implement
@@ -1403,4 +1411,559 @@ void ei()
 void di()
 {
   pc += CB_ARGLEN;
+}
+
+void rlc(uint8_t* arg, uint16_t addr)
+{
+  uint8_t value;
+  // If arg is NULL, we work with (HL)
+  if (arg == NULL)
+  {
+    value = readMemory(addr);
+    flags |= ((*arg & 0x80) >> 3);
+    value = (value << 1) | (value >> 7);
+    writeMemory(addr, value);
+    if (value == 0)
+      flags |= 0x80;
+  }
+  else
+  {
+    flags |= ((*arg & 0x80) >> 3);
+    *arg = (*arg << 1) | (*arg >> 7);
+    if (*arg == 0)
+      flags |= 0x80;
+  }
+  flags &= ~0x40;
+  flags &= ~0x20;
+  pc += CB_ARGLEN;
+}
+
+void rl(uint8_t* arg, uint16_t addr)
+{
+  uint8_t value;
+  uint8_t old_flag = 0;
+  // If arg is NULL, we work with (HL)
+  if (arg == NULL)
+  {
+    value = readMemory(addr);
+    old_flag = (value & 0x80) >> 3;
+    value = (value << 1) | ((flags & 0x10) >> 4);
+    flags |= old_flag;
+    writeMemory(addr, value);
+    if (value == 0)
+      flags |= 0x80;
+  }
+  else
+  {
+    old_flag = (*arg & 0x80) >> 3;
+    *arg = (*arg << 1) | ((flags & 0x10) >> 4);
+    flags |= old_flag;
+    if (*arg == 0)
+      flags |= 0x80;
+  }
+  flags &= ~0x40;
+  flags &= ~0x20;
+  pc += CB_ARGLEN;
+}
+
+void rrc(uint8_t* arg, uint16_t addr)
+{
+  uint8_t value;
+  // If arg is NULL, we work with (HL)
+  if (arg == NULL)
+  {
+    value = readMemory(addr);
+    flags |= ((*arg & 0x1) << 4);
+    value = (value >> 1) | (value << 7);
+    writeMemory(addr, value);
+    if (value == 0)
+      flags |= 0x80;
+  }
+  else
+  {
+    flags |= ((*arg & 0x1) << 4);
+    *arg = (*arg >> 1) | (*arg << 7);
+    if (*arg == 0)
+      flags |= 0x80;
+  }
+  flags &= ~0x40;
+  flags &= ~0x20;
+  pc += CB_ARGLEN;
+}
+
+void rr(uint8_t* arg, uint16_t addr)
+{
+  uint8_t value;
+  uint8_t old_flag = 0;
+  // If arg is NULL, we work with (HL)
+  if (arg == NULL)
+  {
+    value = readMemory(addr);
+    old_flag = (value & 0x1) << 4;
+    value = (value >> 1) | ((flags & 0x10) << 3);
+    flags |= old_flag;
+    writeMemory(addr, value);
+    if (value == 0)
+      flags |= 0x80;
+  }
+  else
+  {
+    old_flag = (*arg & 0x1) << 4;
+    *arg = (*arg >> 1) | ((flags & 0x10) << 3);
+    flags |= old_flag;
+    if (*arg == 0)
+      flags |= 0x80;
+  }
+  flags &= ~0x40;
+  flags &= ~0x20;
+  pc += CB_ARGLEN;
+}
+
+void sla(uint8_t* arg, uint16_t addr)
+{
+  uint8_t value;
+  if (arg == NULL)
+  {
+
+    value = readMemory(addr);
+    flags |= ((value & 0x80) >> 3); 
+    value <<= 1;
+    writeMemory(addr, value);
+    if (value == 0)
+      flags |= 0x80;
+  }
+  else
+  {
+    flags |= ((*arg & 0x80) >> 3); 
+    *arg <<= 1;
+    if (*arg == 0)
+      flags |= 0x80;
+  }
+  flags &= ~0x40;
+  flags &= ~0x20;
+  pc += CB_ARGLEN;
+}
+
+void sra(uint8_t* arg, uint16_t addr)
+{
+  uint8_t value;
+  if (arg == NULL)
+  {
+
+    value = readMemory(addr);
+    flags |= ((value & 0x1) << 4); 
+    if (value & 0x80)
+    {
+      value >>= 1;
+      value |= 0x80;
+    }
+    else
+      value >>= 1;
+    writeMemory(addr, value);
+    if (value == 0)
+      flags |= 0x80;
+  }
+  else
+  {
+    flags |= ((*arg & 0x1) << 4); 
+    if (*arg & 0x80)
+    {
+      *arg >>= 1;
+      *arg |= 0x80;
+    }
+    else
+      *arg >>= 1;
+    if (*arg == 0)
+      flags |= 0x80;
+  }
+  flags &= ~0x40;
+  flags &= ~0x20;
+  pc += CB_ARGLEN;
+}
+
+void srl(uint8_t* arg, uint16_t addr)
+{
+  uint8_t value;
+  if (arg == NULL)
+  {
+
+    value = readMemory(addr);
+    flags |= ((value & 0x1) << 4); 
+    value >>= 1;
+    writeMemory(addr, value);
+    if (value == 0)
+      flags |= 0x80;
+  }
+  else
+  {
+    flags |= ((*arg & 0x1) << 4); 
+    *arg >>= 1;
+    if (*arg == 0)
+      flags |= 0x80;
+  }
+  flags &= ~0x40;
+  flags &= ~0x20;
+  pc += CB_ARGLEN;
+}
+
+void bit(uint8_t* arg, uint16_t addr, uint8_t bit)
+{
+  uint8_t value;
+  flags &= ~0x40;
+  flags |= 0x20;
+  if (arg == NULL)
+  {
+    value = readMemory(addr);
+    if (value & (1 << bit))
+      flags |= 0x80;
+    else
+      flags &= ~0x80;
+  }
+  else
+  {
+    if (*arg & (1 << bit))
+      flags |= 0x80;
+    else
+      flags &= ~0x80;
+  }
+  pc += CB_ARGLEN;
+}
+
+void set(uint8_t* arg, uint16_t addr, uint8_t bit)
+{
+  uint8_t value;
+  if (arg == NULL)
+  {
+    value = readMemory(addr);
+    value |= (1 << bit);
+    writeMemory(addr, value);
+  }
+  else
+  {
+    *arg |= (1 << bit);
+  }
+  pc += CB_ARGLEN;
+}
+
+void res(uint8_t* arg, uint16_t addr, uint8_t bit)
+{
+  uint8_t value;
+  if (arg == NULL)
+  {
+    value = readMemory(addr);
+    value &= ~(1 << bit);
+    writeMemory(addr, value);
+  }
+  else
+  {
+    *arg &= ~(1 << bit);
+  }
+  pc += CB_ARGLEN;
+}
+
+void jumpImm()
+{
+  uint8_t lower = readMemory(pc + 1);
+  uint8_t higher = readMemory(pc + 2);
+  pc = (((uint16_t) higher) << 8) | lower;
+}
+
+void jumpImmZ()
+{
+  uint8_t lower = readMemory(pc + 1);
+  uint8_t higher = readMemory(pc + 2);
+  if ((flags & 0x80))
+    pc = (((uint16_t) higher) << 8) | lower;
+  else
+    pc += CB_ARGLEN;
+}
+
+void jumpImmNZ()
+{
+  uint8_t lower = readMemory(pc + 1);
+  uint8_t higher = readMemory(pc + 2);
+  if (!(flags & 0x80))
+    pc = (((uint16_t) higher) << 8) | lower;
+  else
+    pc += CB_ARGLEN;
+}
+
+void jumpImmNC()
+{
+  uint8_t lower = readMemory(pc + 1);
+  uint8_t higher = readMemory(pc + 2);
+  if (!(flags & 0x10))
+    pc = (((uint16_t) higher) << 8) | lower;
+  else
+    pc += CB_ARGLEN;
+}
+
+void jumpImmC()
+{
+  uint8_t lower = readMemory(pc + 1);
+  uint8_t higher = readMemory(pc + 2);
+  if ((flags & 0x10))
+    pc = (((uint16_t) higher) << 8) | lower;
+  else
+    pc += CB_ARGLEN;
+}
+
+void jumpHL()
+{
+  pc = (((uint16_t) h_reg) << 8) | l_reg;
+}
+
+void jr()
+{
+  uint8_t imm = readMemory(pc + 1);
+  pc += imm;
+}
+
+void jrNZ()
+{
+  uint8_t imm = readMemory(pc + 1);
+  if (!(flags & 0x80))
+    pc += imm;
+  else
+    pc += CB_ARGLEN;
+}
+
+void jrZ()
+{
+  uint8_t imm = readMemory(pc + 1);
+  if ((flags & 0x80))
+    pc += imm;
+  else
+    pc += CB_ARGLEN;
+}
+
+void jrC()
+{
+  uint8_t imm = readMemory(pc + 1);
+  if ((flags & 0x10))
+    pc += imm;
+  else
+    pc += CB_ARGLEN;
+}
+
+void jrNC()
+{
+  uint8_t imm = readMemory(pc + 1);
+  if (!(flags & 0x10))
+    pc += imm;
+  else
+    pc += CB_ARGLEN;
+}
+
+void call()
+{
+  uint8_t lower = readMemory(pc + 1);
+  uint8_t higher = readMemory(pc + 2);
+  writeMemory(stack_ptr, (uint8_t) pc);
+  stack_ptr -= 1;
+  writeMemory(stack_ptr, (uint8_t) (pc >> 8));
+  stack_ptr -= 1;
+  pc = (((uint16_t) higher) << 8) | lower;
+}
+
+void callNZ()
+{
+  if (!(flags & 0x80))
+  {
+    uint8_t lower = readMemory(pc + 1);
+    uint8_t higher = readMemory(pc + 2);
+    writeMemory(stack_ptr, (uint8_t) pc);
+    stack_ptr -= 1;
+    writeMemory(stack_ptr, (uint8_t) (pc >> 8));
+    stack_ptr -= 1;
+    pc = (((uint16_t) higher) << 8) | lower;
+  }
+  else
+  {
+    pc += CB_ARGLEN;
+  }
+}
+
+void callZ()
+{
+  if ((flags & 0x80))
+  {
+    uint8_t lower = readMemory(pc + 1);
+    uint8_t higher = readMemory(pc + 2);
+    writeMemory(stack_ptr, (uint8_t) pc);
+    stack_ptr -= 1;
+    writeMemory(stack_ptr, (uint8_t) (pc >> 8));
+    stack_ptr -= 1;
+    pc = (((uint16_t) higher) << 8) | lower;
+  }
+  else
+  {
+    pc += CB_ARGLEN;
+  }
+}
+
+void callNC()
+{
+  if (!(flags & 0x10))
+  {
+    uint8_t lower = readMemory(pc + 1);
+    uint8_t higher = readMemory(pc + 2);
+    writeMemory(stack_ptr, (uint8_t) pc);
+    stack_ptr -= 1;
+    writeMemory(stack_ptr, (uint8_t) (pc >> 8));
+    stack_ptr -= 1;
+    pc = (((uint16_t) higher) << 8) | lower;
+  }
+  else
+  {
+    pc += CB_ARGLEN;
+  }
+}
+
+void callC()
+{
+  if ((flags & 0x10))
+  {
+    uint8_t lower = readMemory(pc + 1);
+    uint8_t higher = readMemory(pc + 2);
+    writeMemory(stack_ptr, (uint8_t) pc);
+    stack_ptr -= 1;
+    writeMemory(stack_ptr, (uint8_t) (pc >> 8));
+    stack_ptr -= 1;
+    pc = (((uint16_t) higher) << 8) | lower;
+  }
+  else
+  {
+    pc += CB_ARGLEN;
+  }
+}
+
+void rst(uint8_t instruction)
+{
+  writeMemory(stack_ptr, (uint8_t) pc);
+  stack_ptr -= 1;
+  writeMemory(stack_ptr, (uint8_t) (pc >> 8));
+  stack_ptr -= 1;
+  switch (instruction)
+  {
+    case RST_0:
+      pc = 0x0;
+      break;
+    case RST_8:
+      pc = 0x8;
+      break;
+    case RST_10:
+      pc = 0x10;
+      break;
+    case RST_18:
+      pc = 0x18;
+      break;
+    case RST_20:
+      pc = 0x20;
+      break;
+    case RST_28:
+      pc = 0x28;
+      break;
+    case RST_30:
+      pc = 0x30;
+      break;
+    case RST_38:
+      pc = 0x38;
+      break;
+  }
+}
+
+void ret()
+{
+  uint8_t lower;
+  uint8_t higher;
+  stack_ptr += 1;
+  lower = readMemory(stack_ptr);
+  stack_ptr += 1;
+  higher = readMemory(stack_ptr);
+  pc = (((uint16_t) higher) << 8) | lower;
+}
+
+void retNZ()
+{
+  if (!(flags & 0x80))
+  {
+    uint8_t lower;
+    uint8_t higher;
+    stack_ptr += 1;
+    lower = readMemory(stack_ptr);
+    stack_ptr += 1;
+    higher = readMemory(stack_ptr);
+    pc = (((uint16_t) higher) << 8) | lower;
+  }
+  else
+  {
+    pc += CB_ARGLEN;
+  }
+}
+
+void retZ()
+{
+  if ((flags & 0x80))
+  {
+    uint8_t lower;
+    uint8_t higher;
+    stack_ptr += 1;
+    lower = readMemory(stack_ptr);
+    stack_ptr += 1;
+    higher = readMemory(stack_ptr);
+    pc = (((uint16_t) higher) << 8) | lower;
+  }
+  else
+  {
+    pc += CB_ARGLEN;
+  }
+}
+
+void retC()
+{
+  if ((flags & 0x10))
+  {
+    uint8_t lower;
+    uint8_t higher;
+    stack_ptr += 1;
+    lower = readMemory(stack_ptr);
+    stack_ptr += 1;
+    higher = readMemory(stack_ptr);
+    pc = (((uint16_t) higher) << 8) | lower;
+  }
+  else
+  {
+    pc += CB_ARGLEN;
+  }
+}
+
+void retNC()
+{
+  if (!(flags & 0x10))
+  {
+    uint8_t lower;
+    uint8_t higher;
+    stack_ptr += 1;
+    lower = readMemory(stack_ptr);
+    stack_ptr += 1;
+    higher = readMemory(stack_ptr);
+    pc = (((uint16_t) higher) << 8) | lower;
+  }
+  else
+  {
+    pc += CB_ARGLEN;
+  }
+}
+
+void reti()
+{
+  uint8_t lower;
+  uint8_t higher;
+  stack_ptr += 1;
+  lower = readMemory(stack_ptr);
+  stack_ptr += 1;
+  higher = readMemory(stack_ptr);
+  pc = (((uint16_t) higher) << 8) | lower;
+  di();
 }

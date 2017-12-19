@@ -39,7 +39,7 @@
 #define SCF 0x37
 #define SCF_CYCLES 4
 
-#define MISC_CYLES 4
+#define MISC_CYCLES 4
 
 #define STOP 0x10
 #define STOP_ARGLEN 2
@@ -477,6 +477,17 @@
 #define DEC_HL 0x2b
 #define DEC_SP 0x3b
 
+#define RLCA 0x07
+#define RLCA_CYCLES 4
+
+#define RLA 0x17
+#define RLA_CYCLES 4
+
+#define RRCA 0x0f
+#define RRCA_CYCLES 4
+
+#define RRA 0x1f
+#define RRA_CYCLES 4
 
 ////////////////////////////////////////////////////////////////////////////////
 // CB Opcodes //////////////////////////////////////////////////////////////////
@@ -490,5 +501,95 @@
 #define SWAP_UPPER 0x37
 #define SWAP_LOWER 0x30
 #define SWAP_INDIR 0x36
+
+#define CB_CYCLES_REG 8
+#define CB_CYCLES_ADDR 16
+
+#define RLC_LOWER 0x00
+#define RLC_UPPER 0x07
+#define RLC_INDIR 0x06
+
+#define RL_LOWER 0x10
+#define RL_UPPER 0x17
+#define RL_INDIR 0x16
+
+#define RRC_LOWER 0x08
+#define RRC_UPPER 0x0f
+#define RRC_INDIR 0x0e
+
+#define RR_LOWER 0x18
+#define RR_UPPER 0x1f
+#define RR_INDIR 0x1e
+
+#define SLA_LOWER 0x20
+#define SLA_UPPER 0x27
+#define SLA_INDIR 0x26
+
+#define SRA_LOWER 0x28
+#define SRA_UPPER 0x2f
+#define SRA_INDIR 0x2e
+
+#define SRL_LOWER 0x38
+#define SRL_UPPER 0x3f
+#define SRL_INDIR 0x3e
+
+#define BIT_LOWER 0x40
+#define BIT_UPPER 0x7f
+
+#define SET_LOWER 0xc0
+#define SET_UPPER 0xff
+
+#define RES_LOWER 0x80
+#define RES_UPPER 0xbf
+
+#define JP_CYCLES 12
+
+#define JP 0xc3
+#define JPNZ 0xc2
+#define JPZ 0xca
+#define JPNC 0xd2
+#define JPC 0xda
+
+#define JPHL_CYCLES 4
+
+#define JPHL 0xe9
+
+#define JR_CYCLES 8
+
+#define JR 0x18
+
+#define JRNZ 0x20
+#define JRZ 0x28
+#define JRNC 0x30
+#define JRC 0x38
+
+#define CALL_CYCLES 12
+
+#define CALL 0xcd
+#define CALLNZ 0xc4
+#define CALLZ 0xcc
+#define CALLNC 0xd4
+#define CALLC 0xdc
+
+#define RST_CYCLES 32
+
+#define RST_0 0xc7
+#define RST_8 0xcf
+#define RST_10 0xd7
+#define RST_18 0xdf
+#define RST_20 0xe7
+#define RST_28 0xef
+#define RST_30 0xf7
+#define RST_38 0xff
+
+#define RET_CYCLES 8
+
+#define RET 0xc9
+#define RETNZ 0xc0
+#define RETZ 0xc8
+#define RETNC 0xd0
+#define RETC 0xd8
+
+#define RETI 0xd9
 
 #endif // OPCODE_H
