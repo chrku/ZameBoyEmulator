@@ -88,6 +88,8 @@ extern uint8_t e_reg;
 extern uint8_t h_reg;
 extern uint8_t l_reg;
 
+extern uint64_t cycle_counter;
+
 // IO Registers and IER
 
 // Interrupt enable register

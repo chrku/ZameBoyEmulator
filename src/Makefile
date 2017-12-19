@@ -1,9 +1,10 @@
 
 CC = gcc
-CFLAGS = -g -Wall -Wextra -lSDL2
-
-all: main.c cpu.o rom.o decode.o execute.o util.o opcode.h
-	$(CC) $(CFLAGS) -o emu main.c cpu.o rom.o decode.o execute.o util.o opcode.h
+CFLAGS = -g -Wall -Wextra 
+LIBS = $(shell sdl2-config --cflags --libs)
+ 
+all: main.c cpu.o rom.o decode.o execute.o util.o opcode.h graphics.o
+	$(CC) main.c cpu.o rom.o decode.o execute.o util.o opcode.h graphics.o $(CFLAGS) $(LIBS) -o emu  
 
 cpu.o: cpu.c cpu.h
 	$(CC) $(CFLAGS) -c cpu.c
@@ -19,6 +20,9 @@ execute.o: execute.c execute.h
 
 util.o: util.c util.h
 	$(CC) $(CFLAGS) -c util.c
+
+graphics.o: graphics.c graphics.h
+	$(CC) $(CFLAGS) -c graphics.c  
 
 clean:
 	rm *.o

@@ -2,6 +2,7 @@
 #include "cpu.h"
 #include "util.h"
 #include "decode.h"
+#include "graphics.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -18,6 +19,8 @@ uint8_t e_reg = 0;
 uint8_t h_reg = 0;
 uint8_t l_reg = 0;
 uint8_t flags = 0;
+uint64_t cycle_counter = 0;
+
 
 // IO Registers
 uint8_t ier = 0;
@@ -43,6 +46,7 @@ int program_state;
 // Function to stop execution for n cycles
 void sleepCycles(size_t n)
 {
+  cycle_counter += n;
   //TODO: Implement proper sleeping
   for (size_t c = 0; c < n; ++c)
     ;
@@ -197,6 +201,7 @@ void GBStartUp()
 
 void startExecutionGB()
 {
+  initGraphics();
   // For halting, etc.
   program_state = RUNNING;
   uint8_t instruction = 0;
