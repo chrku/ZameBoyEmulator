@@ -34,6 +34,9 @@ uint8_t RAM[GB_RAM_SIZE];
 uint8_t VRAM[GB_VRAM_SIZE];
 uint8_t ROM[GB_ROM_SIZE];
 uint8_t CPU_RAM[WORK_RAM_SIZE];
+uint8_t EXT_RAM[GB_RAM_SIZE];
+uint8_t OAM[OAM_SIZE];
+uint8_t IO_PORTS[IO_SIZE];
 
 int program_state;
 
@@ -66,6 +69,9 @@ void initMemory()
   memset(RAM, 0, GB_RAM_SIZE);
   memset(VRAM, 0, GB_VRAM_SIZE);
   memset(CPU_RAM, 0, WORK_RAM_SIZE);
+  memset(EXT_RAM, 0, GB_RAM_SIZE);
+  memset(OAM, 0, OAM_SIZE);
+  memset(IO_PORTS, 0, IO_SIZE);
 }
 
 uint8_t readMemory(uint16_t addr)
@@ -88,6 +94,37 @@ uint8_t readMemory(uint16_t addr)
   {
     return CPU_RAM[addr - WORKING_RAM_LOWER];
   }
+  else if (addr >= VRAM_LOWER && addr <= VRAM_UPPER)
+  {
+    return VRAM[addr - VRAM_LOWER];
+  }
+  else if (addr >= CART_RAM_LOWER && addr <= CART_RAM_UPPER)
+  {
+    return EXT_RAM[addr - CART_RAM_LOWER];
+  }
+  else if (addr >= ECHO_LOWER && addr <= ECHO_UPPER)
+  {
+    return RAM[addr - ECHO_LOWER];
+  }
+  else if (addr >= OAM_LOWER && addr <= OAM_UPPER)
+  {
+    return OAM[addr - OAM_LOWER];
+  }
+  else if (addr >= UNUSABLE_LOWER && addr <= UNUSABLE_UPPER)
+  {
+#ifdef DEBUG
+    printf("Accessed invalid memory location\n");
+#endif
+    return 0xff;
+  }
+  else if (addr >= IO_REGS_LOWER && addr <= IO_REGS_UPPER)
+  {
+    return IO_PORTS[addr - IO_REGS_LOWER];
+  }
+  else 
+  {
+    return ier;
+  }
   // TODO: Implement the rest of the memory map
   return 0;
 }
@@ -109,6 +146,43 @@ int writeMemory(uint16_t addr, uint8_t data)
   else if (addr >= WORKING_RAM_LOWER && addr <= WORKING_RAM_UPPER)
   {
     CPU_RAM[addr - WORKING_RAM_LOWER] = data;
+    return SUCCESS;
+  }
+  else if (addr >= VRAM_LOWER && addr <= VRAM_UPPER)
+  {
+    VRAM[addr - VRAM_LOWER] = data;
+    return SUCCESS;
+  }
+  else if (addr >= CART_RAM_LOWER && addr <= CART_RAM_UPPER)
+  {
+    EXT_RAM[addr - CART_RAM_LOWER] = data;
+    return SUCCESS;
+  }
+  else if (addr >= ECHO_LOWER && addr <= ECHO_UPPER)
+  {
+    RAM[addr - ECHO_LOWER] = data;
+    return SUCCESS;
+  }
+  else if (addr >= OAM_LOWER && addr <= OAM_UPPER)
+  {
+    OAM[addr - OAM_LOWER] = data;
+    return SUCCESS;
+  }
+  else if (addr >= UNUSABLE_LOWER && addr <= UNUSABLE_UPPER)
+  {
+#ifdef DEBUG
+    printf("Accessed invalid memory location\n");
+#endif
+    return 0xff;
+  }
+  else if (addr >= IO_REGS_LOWER && addr <= IO_REGS_UPPER)
+  {
+    IO_PORTS[addr - IO_REGS_LOWER] = data;
+    return SUCCESS;
+  }
+  else 
+  {
+    ier = data;
     return SUCCESS;
   }
   // TODO: Implement the rest of the memory map

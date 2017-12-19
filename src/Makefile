@@ -1,6 +1,6 @@
 
 CC = gcc
-CFLAGS = -g -Wall -Wextra
+CFLAGS = -g -Wall -Wextra -lSDL2
 
 all: main.c cpu.o rom.o decode.o execute.o util.o opcode.h
 	$(CC) $(CFLAGS) -o emu main.c cpu.o rom.o decode.o execute.o util.o opcode.h

@@ -53,6 +53,19 @@
 #define INTERNAL_RAM_UPPER 0xdfff
 #define WORKING_RAM_LOWER 0xff80
 #define WORKING_RAM_UPPER 0xfffe
+#define VRAM_LOWER 0x8000
+#define VRAM_UPPER 0x9fff
+#define CART_RAM_LOWER 0xa000
+#define CART_RAM_UPPER 0xbfff
+#define ECHO_LOWER 0xe000
+#define ECHO_UPPER 0xfdff
+#define OAM_LOWER 0xfe00
+#define OAM_UPPER 0xfe9f
+#define UNUSABLE_LOWER 0xfea0
+#define UNUSABLE_UPPER 0xfeff
+#define IO_REGS_LOWER 0xff00
+#define IO_REGS_UPPER 0xff7f
+#define INT_REG 0xffff
 
 ////////////////////////////////////////////////////////////////////////////////
 // Constants ///////////////////////////////////////////////////////////////////
@@ -81,13 +94,14 @@ extern uint8_t l_reg;
 extern uint8_t ier;
 
 // Interrupt master flag
+// Not addressable
 extern uint8_t imf;
 
 // Disable/enable interrupts request flags
 extern uint8_t change_interrupt;
 
-#define ENABLE_INTERRUPTS 1
-#define DISABLE_INTERRUPTS 2
+#define REQ_ENABLE_INTERRUPTS 1
+#define REQ_DISABLE_INTERRUPTS 2
 
 // 16 bit registers
 
@@ -98,6 +112,9 @@ extern uint16_t pc; // Program counter
 extern int program_state;
 
 // Memory
+
+#define OAM_SIZE 160
+#define IO_SIZE 128
 
 // Main RAM
 extern uint8_t RAM[GB_RAM_SIZE];
@@ -110,6 +127,15 @@ extern uint8_t ROM[GB_ROM_SIZE];
 
 // Working & stack RAM
 extern uint8_t CPU_RAM[WORK_RAM_SIZE];
+
+// External RAM
+extern uint8_t EXT_RAM[GB_RAM_SIZE];
+
+// OAM 
+extern uint8_t OAM[OAM_SIZE];
+
+// IO Regs
+extern uint8_t IO_PORTS[IO_SIZE];
 
 // Sleep for n cycles
 extern void sleepCycles(size_t n);
