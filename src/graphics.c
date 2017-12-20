@@ -3,6 +3,7 @@
 #include "cpu.h"
 #include <stdio.h>
 #include <SDL2/SDL.h>
+#include <stdbool.h>
 
 SDL_Window* window;
 
@@ -135,5 +136,105 @@ void doGraphics()
           writeMemory(STAT, stat_value);
       }
       break;
+  }
+}
+
+void renderScanline()
+{
+  uint8_t lcdc = readMemory(LCDC);
+  // Location of tile data
+  if (lcdc & 0x1)
+  {
+    uint16_t tile_base;
+    uint8_t y;
+    uint8_t x;
+    uint8_t x_offset_bg = readMemory(0xff43);
+    uint8_t y_offset_bg = readMemory(0xff42);
+    uint8_t x_offset_wi = readMemory(0xff4b) - 7;
+    uint8_t y_offset_wi = readMemory(0xff4a);
+    uint16_t bg_addr;
+    uint16_t tile;
+    uint16_t col;
+    bool window_area = false;
+    if (lcdc & 0x10)
+      tile_base = TILE_DATA_BASE_1;
+    else
+      tile_base = TILE_DATA_BASE_2;
+    // Windowing
+    if (lcdc & 0x20)
+    {
+      if (y_offset_wi <= readMemory(LCDC_Y))
+        window_area = true;
+    }
+    // Background data
+    if (window_area)
+    {
+      if (lcdc & 0x40)
+        bg_addr = BG_ADDR_1;
+      else
+        bg_addr = BG_ADDR_2;
+    }
+    else
+    {
+      if (lcdc & 0x8)
+        bg_addr = BG_ADDR_1;
+      else
+        bg_addr = BG_ADDR_2;
+    }
+    if (window_area)
+    {
+      y = readMemory(0xff44) - y_offset_wi;
+    }
+    else
+    {
+      y = readMemory(0xff44) + y_offset_bg;
+    }
+    tile = (y/8) * 32;
+    for (int i = 0; i < 160; ++i)
+    {
+      if (window_area && i >= x_offset_wi)
+        x = i - x_offset_wi;
+      else
+        x = i + x_offset_bg;
+      col = x/8;
+      uint8_t location;
+      if (lcdc & 0x10)
+        location = tile_base + (readMemory(bg_addr + col + tile) * 16);
+      else
+        location = tile_base + ((((int8_t) readMemory(bg_addr + col + tile)) + 128) * 16);
+      uint8_t line = (y % 8) * 2;
+      uint8_t line1 = readMemory(location + line);
+      uint8_t line2 = readMemory(location + line + 1);
+      int8_t color_index = ((x % 8) - 7) * (-1);
+      uint8_t color = (line2 & (1 << color_index)) | (line1 & (1 << color_index)); 
+      color *= 2;
+      // Get the color pallete
+      uint8_t pallette_value = readMemory(0xff47);
+      pallette_value = (pallette_value & (1 << color)) | (pallette_value & (1 << (color + 1)));
+      uint8_t cur_scan_line = readMemory(0xff44);
+      switch (pallette_value)
+      {
+        case 0:
+          framebuffer[i + SCREEN_HEIGHT * cur_scan_line] = 0xFFFFFFFF;
+          break;
+        case 1:
+          framebuffer[i + SCREEN_HEIGHT * cur_scan_line] = 0x2C2A2AFF;
+          break;
+        case 2:
+          framebuffer[i + SCREEN_HEIGHT * cur_scan_line] = 0x706969FF;
+          break;
+        case 3:
+          framebuffer[i + SCREEN_HEIGHT * cur_scan_line] = 0x000000FF;
+          break;
+      }
+      SDL_UpdateTexture(texture, NULL, framebuffer, SCREEN_WIDTH * sizeof(uint32_t));
+      SDL_RenderClear(renderer);
+      SDL_RenderCopy(renderer, texture, NULL, NULL);
+      SDL_RenderPresent(renderer); 
+    }
+  }
+  if (lcdc & 0x2)
+  {
+
   }
 }

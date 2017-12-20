@@ -35,6 +35,12 @@ typedef enum _graphics_state_
 #define STAT 0xff41
 #define LCDC_Y 0xff44
 
+#define TILE_DATA_BASE_1 0x8000
+#define TILE_DATA_BASE_2 0x8800
+
+#define BG_ADDR_1 0x9c00
+#define BG_ADDR_2 0x9800
+
 #define SCREEN_WIDTH 160
 #define SCREEN_HEIGHT 144
 #define CHANNELS 4
