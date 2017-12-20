@@ -362,7 +362,6 @@ void doHLDtoA()
   higher--;
   h_reg = (uint8_t) (higher >> 8);
   l_reg = (uint8_t) higher;
-  pc += LD_DEC_A_ARGLEN;
 }
 
 void doAtoHLD()
@@ -374,7 +373,6 @@ void doAtoHLD()
   higher--;
   h_reg = (uint8_t) (higher >> 8);
   l_reg = (uint8_t) higher;
-  pc += LD_DEC_A_ARGLEN;
 }
 
 void doHLItoA()
@@ -386,7 +384,6 @@ void doHLItoA()
   higher++;
   h_reg = (uint8_t) (higher >> 8);
   l_reg = (uint8_t) higher;
-  pc += LD_DEC_A_ARGLEN;
 }
 
 void doAtoHLI()
@@ -398,7 +395,6 @@ void doAtoHLI()
   higher++;
   h_reg = (uint8_t) (higher >> 8);
   l_reg = (uint8_t) higher;
-  pc += LD_DEC_A_ARGLEN;
 }
 
 // Access to 0xff00 + n
@@ -1122,22 +1118,23 @@ void inc(uint8_t instruction)
       writeMemory(addr, value + 1);
       break;
   }
-  if (value + 1 == 0)
-  {
-    flags |= 0x80;
-  }
-  else
-  {
-    flags &= ~(0x80);
-  }
   flags &= ~(0x40);
-  if ((((value + 1) & 0xf) - 1) & 0x10)
+  if ((((value) & 0xf) + 1) & 0x10)
   {
     flags |= 0x20;
   }
   else
   {
     flags &= ~(0x20);
+  }
+  value += 1;
+  if (value == 0)
+  {
+    flags |= 0x80;
+  }
+  else
+  {
+    flags &= ~(0x80);
   }
   pc += ALU_REG_ARGLEN;
 }
@@ -1716,14 +1713,16 @@ void jumpHL()
 void jr()
 {
   uint8_t imm = readMemory(pc + 1);
-  pc += imm;
+  pc += 2 + ((int8_t) imm);
 }
 
 void jrNZ()
 {
   uint8_t imm = readMemory(pc + 1);
   if (!(flags & 0x80))
-    pc += imm;
+  {
+    pc += 2 + ((int8_t) imm);
+  }
   else
     pc += CB_ARGLEN;
 }
@@ -1732,7 +1731,9 @@ void jrZ()
 {
   uint8_t imm = readMemory(pc + 1);
   if ((flags & 0x80))
-    pc += imm;
+  {
+    pc += 2 + ((int8_t) imm);
+  }
   else
     pc += CB_ARGLEN;
 }
@@ -1741,7 +1742,9 @@ void jrC()
 {
   uint8_t imm = readMemory(pc + 1);
   if ((flags & 0x10))
-    pc += imm;
+  {
+    pc += 2 + ((int8_t) imm);
+  }
   else
     pc += CB_ARGLEN;
 }
@@ -1750,7 +1753,9 @@ void jrNC()
 {
   uint8_t imm = readMemory(pc + 1);
   if (!(flags & 0x10))
-    pc += imm;
+  {
+    pc += 1 + ((int8_t) imm);
+  }
   else
     pc += CB_ARGLEN;
 }

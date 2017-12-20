@@ -122,6 +122,7 @@ void doGraphics()
           stat_value = readMemory(STAT);
           stat_value |= 0x2;
           writeMemory(STAT, stat_value);
+          renderScanline();
         }
       }
       break;

@@ -4,6 +4,7 @@
 
 void printRegisters()
 {
+  printf("Executing instruction: %hhx\n", readMemory(pc));
   // First, print the general purpose registers
   printf("A: %hhx; B: %hhx; C: %hhx; D: %hhx; E: %hhx; H: %hhx, L: %hhx;\n",
       a_reg, b_reg, c_reg, d_reg, e_reg, h_reg, l_reg);
