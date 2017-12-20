@@ -9,6 +9,8 @@ SDL_Window* window;
 
 SDL_Renderer* renderer;
 
+static int off_texture = 0;
+
 SDL_Texture* texture;
 
 int mode = 0;
@@ -27,8 +29,8 @@ int initGraphics()
     return -1;
   }
   // Create window
-  window = SDL_CreateWindow("LameBoy Emulator", 100, 100, SCREEN_HEIGHT,
-      SCREEN_WIDTH, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS);
+  window = SDL_CreateWindow("LameBoy Emulator", 100, 100, SCREEN_WIDTH,
+      SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
   if (window == NULL)
   {
     SDL_Quit();
@@ -45,7 +47,7 @@ int initGraphics()
 
   // Create the texture
   texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
-      SDL_TEXTUREACCESS_STATIC, SCREEN_WIDTH, SCREEN_HEIGHT);
+      SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
 
   // Default colour: black
   memset(framebuffer, 0, SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint32_t));
@@ -61,7 +63,7 @@ void doGraphics()
 {
   uint8_t lcdc = readMemory(LCDC);
   uint8_t stat_value;
-  uint8_t diff = (uint8_t) cycle_counter - last_cycle_count;
+  uint64_t diff =  cycle_counter - last_cycle_count;
   last_cycle_count += diff;
   mode_count += diff;
   if (!(lcdc & 0x80))
@@ -73,13 +75,18 @@ void doGraphics()
     IO_PORTS[0x44] = 0;
     writeMemory(STAT, stat_value);
     mode = V_BLANK;
-    memset(framebuffer, 0, SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint32_t));
-    SDL_UpdateTexture(texture, NULL, framebuffer, SCREEN_WIDTH * sizeof(uint32_t));
-    SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, texture, NULL, NULL);
-    SDL_RenderPresent(renderer); 
+    if (!off_texture)
+    {
+      memset(framebuffer, 0, SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint32_t));
+      SDL_UpdateTexture(texture, NULL, framebuffer, SCREEN_WIDTH * sizeof(uint32_t));
+      SDL_RenderClear(renderer);
+      SDL_RenderCopy(renderer, texture, NULL, NULL);
+      SDL_RenderPresent(renderer); 
+      off_texture = 1;
+    }
     return;
   }
+  off_texture = 0;
   switch (mode)
   {
     // Case one: access OAM
@@ -88,7 +95,7 @@ void doGraphics()
       {
         mode = A_VRAM;
         stat_value = readMemory(STAT);
-        stat_value |= 0x11;
+        stat_value |= 0x2;
         writeMemory(STAT, stat_value);
         mode_count = 0;
       }
@@ -99,7 +106,7 @@ void doGraphics()
       {
         mode = H_BLANK;
         stat_value = readMemory(STAT);
-        stat_value &= ~0x11;
+        stat_value &= ~0x2;
         writeMemory(STAT, stat_value);
         mode_count = 0;
       }
@@ -122,6 +129,7 @@ void doGraphics()
           stat_value = readMemory(STAT);
           stat_value |= 0x2;
           writeMemory(STAT, stat_value);
+          requestInterrupt(BLANK);
           renderScanline();
         }
       }
@@ -130,6 +138,10 @@ void doGraphics()
       if (mode_count >= A_V_BLANK_TIME)
       {
           mode_count = 0;
+          SDL_UpdateTexture(texture, NULL, framebuffer, SCREEN_WIDTH * sizeof(uint32_t));
+          SDL_RenderClear(renderer);
+          SDL_RenderCopy(renderer, texture, NULL, NULL);
+          SDL_RenderPresent(renderer); 
           IO_PORTS[0x44] = 0;
           mode = A_OAM;
           stat_value = readMemory(STAT);
@@ -228,10 +240,6 @@ void renderScanline()
           framebuffer[i + SCREEN_HEIGHT * cur_scan_line] = 0x000000FF;
           break;
       }
-      SDL_UpdateTexture(texture, NULL, framebuffer, SCREEN_WIDTH * sizeof(uint32_t));
-      SDL_RenderClear(renderer);
-      SDL_RenderCopy(renderer, texture, NULL, NULL);
-      SDL_RenderPresent(renderer); 
     }
   }
   if (lcdc & 0x2)

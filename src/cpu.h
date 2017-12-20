@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define DEBUG
+// #define DEBUG
 
 // CPU specs
 
@@ -19,13 +19,13 @@
 // Size of the memory bus
 #define BUS_SIZE 65536
 // Size of the RAM of the original game boy
-#define GB_RAM_SIZE 8000
+#define GB_RAM_SIZE 8192
 // Size of the VRAM of the original game boy
-#define GB_VRAM_SIZE 8000
+#define GB_VRAM_SIZE 8192
 // Size of the ROM memory segment
 #define GB_ROM_SIZE 0x200000
 // Cartridge RAM
-#define CARTRIDGE_ROM_SIZE 8000
+#define CARTRIDGE_ROM_SIZE 8192
 // Working RAM
 #define WORK_RAM_SIZE 127
 
@@ -172,5 +172,16 @@ uint8_t readMemory(uint16_t addr);
 int writeMemory(uint16_t addr, uint8_t data);
 
 void executeDMA(uint8_t data);
+
+void doEventLoop();
+
+void doInterrupts();
+
+typedef enum _interrupts_
+{
+  BLANK, LCD_STAT, TIMER, SERIAL, JOYPAD
+} interrupt;
+
+void requestInterrupt(interrupt i);
 
 #endif // CPU_H

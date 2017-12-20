@@ -1,6 +1,6 @@
 
 CC = gcc
-CFLAGS = -g -Wall -Wextra -std=c11
+CFLAGS =  -Wall -Wextra -std=c11 -g
 LIBS = $(shell sdl2-config --cflags --libs)
  
 all: main.c cpu.o rom.o decode.o execute.o util.o opcode.h graphics.o

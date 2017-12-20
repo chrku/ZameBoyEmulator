@@ -1,4 +1,5 @@
 
+#include <SDL2/SDL.h>
 #include "cpu.h"
 #include "util.h"
 #include "decode.h"
@@ -47,9 +48,6 @@ int program_state;
 void sleepCycles(size_t n)
 {
   cycle_counter += n;
-  //TODO: Implement proper sleeping
-  for (size_t c = 0; c < n; ++c)
-    ;
 }
 
 void initRegisters()
@@ -201,12 +199,48 @@ int writeMemory(uint16_t addr, uint8_t data)
 
 void GBStartUp()
 {
-  // TODO: Implement the proper startup sequence
+  IO_PORTS[0x05] = 0;
+  IO_PORTS[0x06] = 0;
+  IO_PORTS[0x07] = 0;
+  IO_PORTS[0x10] = 0x80;
+  IO_PORTS[0x11] = 0xBF;
+  IO_PORTS[0x12] = 0xF3;
+  IO_PORTS[0x14] = 0xBF;
+  IO_PORTS[0x16] = 0x3F;
+  IO_PORTS[0x17] = 0;
+  IO_PORTS[0x19] = 0xBF;
+  IO_PORTS[0x1A] = 0x7F;
+  IO_PORTS[0x1B] = 0xFF;
+  IO_PORTS[0x1C] = 0x9F;
+  IO_PORTS[0x1E] = 0xBF;
+  IO_PORTS[0x20] = 0xFF;
+  IO_PORTS[0x21] = 0;
+  IO_PORTS[0x22] = 0;
+  IO_PORTS[0x23] = 0xBF;
+  IO_PORTS[0x24] = 0x77;
+  IO_PORTS[0x25] = 0xF3;
+  IO_PORTS[0x26] = 0xF1;
+  IO_PORTS[0x40] = 0x91;
+  IO_PORTS[0x42] = 0;
+  IO_PORTS[0x43] = 0;
+  IO_PORTS[0x45] = 0;
+  IO_PORTS[0x47] = 0xFC;
+  IO_PORTS[0x48] = 0xFF;
+  IO_PORTS[0x49] = 0x00;
+  IO_PORTS[0x4a] = 0x00;
+  IO_PORTS[0x4b] = 0x00;
+  ier = 0;
+  imf = 1;
   return;
 }
 
 void startExecutionGB()
 {
+  uint32_t timer = 0;
+  uint32_t last_time = 0;
+  uint64_t current_cycle_counter = 0;
+  uint64_t last_cycle_count = 0;
+  uint32_t elapsed = 0;
   initGraphics();
   // For halting, etc.
   program_state = RUNNING;
@@ -215,8 +249,8 @@ void startExecutionGB()
   char dbg;
 #endif
   // Initialize everything
-  initRegisters();
   initMemory();
+  initRegisters();
   GBStartUp();
 
   // If debug macro is enabled, print the registers
@@ -224,16 +258,29 @@ void startExecutionGB()
   printRegisters();
 #endif
 
+  current_cycle_counter = cycle_counter;
   while (program_state == RUNNING)
   {
-    instruction = readMemory(pc);
-    decodeAndExecuteInstruction(instruction);
-    doGraphics();
-
+    elapsed = SDL_GetTicks();
+    while (cycle_counter - last_cycle_count <= 4194304)
+    {
+      instruction = readMemory(pc);
+      decodeAndExecuteInstruction(instruction);
+      doGraphics();
+      //doEventLoop();
+      doInterrupts();
+    }
+    elapsed = SDL_GetTicks() - elapsed;
+    printf("Elapsed: %d\n", elapsed);
 #ifdef DEBUG
   printRegisters();
   dbg = getchar();
 #endif
+    timer = SDL_GetTicks() - last_time;
+    last_cycle_count = cycle_counter;
+    // if (1000 - (int) timer > 0)
+    //  SDL_Delay(1000 - timer);
+    last_time = SDL_GetTicks();
   }
 }
 
@@ -243,5 +290,78 @@ void executeDMA(uint8_t data)
   for (int i = 0; i < 160; ++i)
   {
     writeMemory(0xfe00 + i, readMemory(addr + i));
+  }
+}
+
+void doEventLoop()
+{
+  SDL_Event event;
+  while(SDL_PollEvent(&event))
+  {
+    switch(event.type)
+    {
+      case SDL_QUIT:
+        exit(0);
+        break;
+    }
+  }
+}
+
+void doInterrupts()
+{
+  // If interrupt master flag is disabled
+  if (!imf)
+    return;
+  uint8_t enabled_interrupts = readMemory(0xffff);
+  uint8_t int_flags = readMemory(0xff0f);
+  if (
+        ((enabled_interrupts & 0x1) && (int_flags & 0x1)) ||
+        ((enabled_interrupts & 0x2) && (int_flags & 0x2)) ||
+        ((enabled_interrupts & 0x4) && (int_flags & 0x4)) ||
+        ((enabled_interrupts & 0x8) && (int_flags & 0x8)) ||
+        ((enabled_interrupts & 0x10) && (int_flags & 0x10)) 
+     )
+  {
+    // Disable interrupts
+    imf = 0;
+    // Save pc on stack
+    writeMemory(stack_ptr, (uint8_t) (pc >> 8));
+    stack_ptr += 1;
+    writeMemory(stack_ptr, (uint8_t) pc);
+    stack_ptr += 1;
+    // I think its twelve??!!
+    sleepCycles(12);
+    if ((enabled_interrupts & 0x1) && (int_flags & 0x1))
+      pc = 0x40;
+    else if ((enabled_interrupts & 0x2) && (int_flags & 0x2))
+      pc = 0x48;
+    else if ((enabled_interrupts & 0x4) && (int_flags & 0x4))
+      pc = 0x50;
+    else if ((enabled_interrupts & 0x8) && (int_flags & 0x8))
+      pc = 0x58;
+    else if ((enabled_interrupts & 0x10) && (int_flags & 0x10))
+      pc = 0x60;
+  }
+}
+
+void requestInterrupt(interrupt i)
+{
+  switch(i)
+  {
+    case BLANK:
+      IO_PORTS[0x0f] |= 0x1;
+      break;
+    case LCD_STAT:
+      IO_PORTS[0x0f] |= 0x2;
+      break;
+    case TIMER:
+      IO_PORTS[0x0f] |= 0x4;
+      break;
+    case SERIAL:
+      IO_PORTS[0x0f] |= 0x8;
+      break;
+    case JOYPAD:
+      IO_PORTS[0x0f] |= 0x10;
+      break;
   }
 }
