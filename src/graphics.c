@@ -107,7 +107,6 @@ void doGraphics()
       if (mode_count >= A_VRAM_TIME)
       {
         mode = H_BLANK;
-        requestInterrupt(LCD_STAT);
         stat_value = readMemory(STAT);
         stat_value &= ~0x2;
         writeMemory(STAT, stat_value);
@@ -129,7 +128,6 @@ void doGraphics()
         else
         {
           IO_PORTS[0x44]++;
-          printf("%hx;\n", IO_PORTS[0x44]);
           mode = A_OAM;
           stat_value = readMemory(STAT);
           stat_value |= 0x2;

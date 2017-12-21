@@ -1674,7 +1674,7 @@ void jumpImmZ()
   if ((flags & 0x80))
     pc = (((uint16_t) higher) << 8) | lower;
   else
-    pc += CB_ARGLEN;
+    pc += 3;
 }
 
 void jumpImmNZ()
@@ -1684,7 +1684,7 @@ void jumpImmNZ()
   if (!(flags & 0x80))
     pc = (((uint16_t) higher) << 8) | lower;
   else
-    pc += CB_ARGLEN;
+    pc += 3;
 }
 
 void jumpImmNC()
@@ -1694,7 +1694,7 @@ void jumpImmNC()
   if (!(flags & 0x10))
     pc = (((uint16_t) higher) << 8) | lower;
   else
-    pc += CB_ARGLEN;
+    pc += 3;
 }
 
 void jumpImmC()
@@ -1704,7 +1704,7 @@ void jumpImmC()
   if ((flags & 0x10))
     pc = (((uint16_t) higher) << 8) | lower;
   else
-    pc += CB_ARGLEN;
+    pc += 3;
 }
 
 void jumpHL()

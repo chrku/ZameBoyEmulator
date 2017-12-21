@@ -34,6 +34,10 @@ uint16_t pc = START_LOCATION;
 
 uint16_t stack_ptr = 0;
 
+uint64_t timer_freq = 0;
+uint64_t current_timer_value = 1024;
+uint64_t divider_time = 0;
+
 // RAM and VRAM
 uint8_t RAM[GB_RAM_SIZE];
 uint8_t VRAM[GB_VRAM_SIZE];
@@ -49,6 +53,7 @@ int program_state;
 void sleepCycles(size_t n)
 {
   cycle_counter += n;
+  doTimers(n);
 }
 
 void initRegisters()
@@ -186,9 +191,37 @@ int writeMemory(uint16_t addr, uint8_t data)
     if (addr == DMA_REG)
       executeDMA(data);
     else if (addr == 0xff02 && data == 0x81)
-      printf("%c\n", IO_PORTS[0x1]);
+      printf("%c", IO_PORTS[0x1]);
     else if (addr == 0xff44)
       IO_PORTS[0x44] = 0;
+    else if (addr == 0xff04)
+      IO_PORTS[0x04] = 0;
+    else if (addr == 0xff41)
+    {
+      uint8_t stat_val = IO_PORTS[0x41];
+      uint8_t orig = stat_val & 7;
+      IO_PORTS[0x41] = data;
+      IO_PORTS[0x41] &= ~7;
+      IO_PORTS[0x41] |= orig;
+    }
+    else if (addr == 0xff07)
+    {
+      uint8_t tmc = IO_PORTS[0x07];
+      IO_PORTS[0x07] = data;
+      uint8_t new_tmc = IO_PORTS[0x07];
+      uint8_t old_frq = (tmc & 0x1) | (tmc & 0x2);
+      uint8_t new_frq = (new_tmc & 0x1) | (new_tmc & 0x2);
+      if (old_frq != new_frq)
+      {
+        switch(new_frq)
+        {
+          case 0: current_timer_value = 1024; timer_freq = 4096; break;
+          case 1: current_timer_value = 16; timer_freq = 262144; break;
+          case 2: current_timer_value = 64; timer_freq = 65536; break;
+          case 3: current_timer_value = 256; timer_freq = 16382; break;
+        }
+      }
+    }
     else
       IO_PORTS[addr - IO_REGS_LOWER] = data;
     return SUCCESS;
@@ -204,6 +237,7 @@ int writeMemory(uint16_t addr, uint8_t data)
 
 void GBStartUp()
 {
+  IO_PORTS[0x04] = 0;
   IO_PORTS[0x05] = 0;
   IO_PORTS[0x06] = 0;
   IO_PORTS[0x07] = 0;
@@ -237,7 +271,7 @@ void GBStartUp()
   IO_PORTS[0x4b] = 0x00;
   IO_PORTS[0xf] = 0xe1;
   ier = 0;
-  imf = 1;
+  imf = 0;
   return;
 }
 
@@ -294,7 +328,7 @@ void startExecutionGB()
       doInterrupts();
     }
     elapsed = SDL_GetTicks() - elapsed;
-    printf("Elapsed: %d\n", elapsed);
+    // printf("Elapsed: %d\n", elapsed);
     last_cycle_count = cycle_counter;
     // if (1000 - (int) timer > 0)
     //  SDL_Delay(1000 - timer);
@@ -380,5 +414,39 @@ void requestInterrupt(interrupt i)
     case JOYPAD:
       IO_PORTS[0x0f] |= 0x10;
       break;
+  }
+}
+
+void doTimers(int cycles)
+{
+  uint8_t tac = IO_PORTS[0x7];
+  divider_time += cycles;
+  if (divider_time >= 255)
+  {
+    divider_time = 0;
+    IO_PORTS[0x04]++;
+  }
+  if (tac & 0x4)
+  {
+    current_timer_value -= cycles;
+    if (current_timer_value <= 0)
+    {
+      uint8_t tmc = IO_PORTS[0x07];
+      uint8_t new_frq = (tmc & 0x1) | (tmc & 0x2);
+      switch(new_frq)
+      {
+        case 0: current_timer_value = 1024; timer_freq = 4096; break;
+        case 1: current_timer_value = 16; timer_freq = 262144; break;
+        case 2: current_timer_value = 64; timer_freq = 65536; break;
+        case 3: current_timer_value = 256; timer_freq = 16382; break;
+      }
+      if (readMemory(TIMA) == 255)
+      {
+        writeMemory(TIMA, readMemory(TMA));
+        requestInterrupt(TIMER);
+      }
+      else
+        writeMemory(TIMA, readMemory(TIMA) + 1);
+    }
   }
 }

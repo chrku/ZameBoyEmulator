@@ -12,7 +12,7 @@
 // CPU specs
 
 // Clock speed
-#define CLK_SPEED 4.194304
+#define CLK_SPEED 4194304
 
 // Size of the memory bus
 #define BUS_SIZE 65536
@@ -31,7 +31,8 @@
 
  #define TIMA 0xFF05
 #define TMA 0xFF06
-#define TMC 0xFF07 
+#define TMC 0xFF07
+#define TAC 0xFF07
 
 ////////////////////////////////////////////////////////////////////////////////
 // INITIAL VALUES FOR REGISTERS ////////////////////////////////////////////////
@@ -94,6 +95,10 @@ extern uint8_t h_reg;
 extern uint8_t l_reg;
 
 extern uint64_t cycle_counter;
+
+extern uint64_t timer_freq;
+extern uint64_t current_timer_value;
+extern uint64_t divider_time;
 
 // IO Registers and IER
 
@@ -181,5 +186,7 @@ typedef enum _interrupts_
 } interrupt;
 
 void requestInterrupt(interrupt i);
+
+void doTimers(int cycles);
 
 #endif // CPU_H
