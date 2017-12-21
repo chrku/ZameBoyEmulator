@@ -1402,11 +1402,13 @@ void stop()
 
 void ei()
 {
+  imf = 1;
   pc += CB_ARGLEN;
 }
 
 void di()
 {
+  imf = 0;
   pc += CB_ARGLEN;
 }
 
@@ -1724,7 +1726,7 @@ void jrNZ()
     pc += 2 + ((int8_t) imm);
   }
   else
-    pc += CB_ARGLEN;
+    pc += 2;
 }
 
 void jrZ()
@@ -1735,7 +1737,7 @@ void jrZ()
     pc += 2 + ((int8_t) imm);
   }
   else
-    pc += CB_ARGLEN;
+    pc += 2;
 }
 
 void jrC()
@@ -1746,7 +1748,7 @@ void jrC()
     pc += 2 + ((int8_t) imm);
   }
   else
-    pc += CB_ARGLEN;
+    pc += 2;
 }
 
 void jrNC()
@@ -1757,13 +1759,14 @@ void jrNC()
     pc += 1 + ((int8_t) imm);
   }
   else
-    pc += CB_ARGLEN;
+    pc += 2;
 }
 
 void call()
 {
   uint8_t lower = readMemory(pc + 1);
   uint8_t higher = readMemory(pc + 2);
+  pc += 3;
   writeMemory(stack_ptr, (uint8_t) pc);
   stack_ptr -= 1;
   writeMemory(stack_ptr, (uint8_t) (pc >> 8));
@@ -1777,6 +1780,7 @@ void callNZ()
   {
     uint8_t lower = readMemory(pc + 1);
     uint8_t higher = readMemory(pc + 2);
+    pc += 3;
     writeMemory(stack_ptr, (uint8_t) pc);
     stack_ptr -= 1;
     writeMemory(stack_ptr, (uint8_t) (pc >> 8));
@@ -1795,6 +1799,7 @@ void callZ()
   {
     uint8_t lower = readMemory(pc + 1);
     uint8_t higher = readMemory(pc + 2);
+    pc += 3;
     writeMemory(stack_ptr, (uint8_t) pc);
     stack_ptr -= 1;
     writeMemory(stack_ptr, (uint8_t) (pc >> 8));
@@ -1813,6 +1818,7 @@ void callNC()
   {
     uint8_t lower = readMemory(pc + 1);
     uint8_t higher = readMemory(pc + 2);
+    pc += 3;
     writeMemory(stack_ptr, (uint8_t) pc);
     stack_ptr -= 1;
     writeMemory(stack_ptr, (uint8_t) (pc >> 8));
@@ -1831,6 +1837,7 @@ void callC()
   {
     uint8_t lower = readMemory(pc + 1);
     uint8_t higher = readMemory(pc + 2);
+    pc += 3;
     writeMemory(stack_ptr, (uint8_t) pc);
     stack_ptr -= 1;
     writeMemory(stack_ptr, (uint8_t) (pc >> 8));
@@ -1845,6 +1852,7 @@ void callC()
 
 void rst(uint8_t instruction)
 {
+  pc += 1;
   writeMemory(stack_ptr, (uint8_t) pc);
   stack_ptr -= 1;
   writeMemory(stack_ptr, (uint8_t) (pc >> 8));
@@ -1883,9 +1891,9 @@ void ret()
   uint8_t lower;
   uint8_t higher;
   stack_ptr += 1;
-  lower = readMemory(stack_ptr);
-  stack_ptr += 1;
   higher = readMemory(stack_ptr);
+  stack_ptr += 1;
+  lower = readMemory(stack_ptr);
   pc = (((uint16_t) higher) << 8) | lower;
 }
 
@@ -1896,9 +1904,9 @@ void retNZ()
     uint8_t lower;
     uint8_t higher;
     stack_ptr += 1;
-    lower = readMemory(stack_ptr);
-    stack_ptr += 1;
     higher = readMemory(stack_ptr);
+    stack_ptr += 1;
+    lower = readMemory(stack_ptr);
     pc = (((uint16_t) higher) << 8) | lower;
   }
   else
@@ -1914,9 +1922,9 @@ void retZ()
     uint8_t lower;
     uint8_t higher;
     stack_ptr += 1;
-    lower = readMemory(stack_ptr);
-    stack_ptr += 1;
     higher = readMemory(stack_ptr);
+    stack_ptr += 1;
+    lower = readMemory(stack_ptr);
     pc = (((uint16_t) higher) << 8) | lower;
   }
   else
@@ -1932,9 +1940,9 @@ void retC()
     uint8_t lower;
     uint8_t higher;
     stack_ptr += 1;
-    lower = readMemory(stack_ptr);
-    stack_ptr += 1;
     higher = readMemory(stack_ptr);
+    stack_ptr += 1;
+    lower = readMemory(stack_ptr);
     pc = (((uint16_t) higher) << 8) | lower;
   }
   else
@@ -1950,9 +1958,9 @@ void retNC()
     uint8_t lower;
     uint8_t higher;
     stack_ptr += 1;
-    lower = readMemory(stack_ptr);
-    stack_ptr += 1;
     higher = readMemory(stack_ptr);
+    stack_ptr += 1;
+    lower = readMemory(stack_ptr);
     pc = (((uint16_t) higher) << 8) | lower;
   }
   else
@@ -1966,9 +1974,9 @@ void reti()
   uint8_t lower;
   uint8_t higher;
   stack_ptr += 1;
-  lower = readMemory(stack_ptr);
-  stack_ptr += 1;
   higher = readMemory(stack_ptr);
+  stack_ptr += 1;
+  lower = readMemory(stack_ptr);
   pc = (((uint16_t) higher) << 8) | lower;
   ei();
 }

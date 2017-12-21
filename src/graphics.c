@@ -50,7 +50,7 @@ int initGraphics()
       SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
 
   // Default colour: black
-  memset(framebuffer, 0, SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint32_t));
+  memset(framebuffer, 0xcf, SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint32_t));
   SDL_UpdateTexture(texture, NULL, framebuffer, SCREEN_WIDTH * sizeof(uint32_t));
   SDL_RenderClear(renderer);
   SDL_RenderCopy(renderer, texture, NULL, NULL);
@@ -62,7 +62,7 @@ int initGraphics()
 void doGraphics()
 {
   uint8_t lcdc = readMemory(LCDC);
-  uint8_t stat_value;
+  uint8_t stat_value = readMemory(STAT);
   uint64_t diff =  cycle_counter - last_cycle_count;
   last_cycle_count += diff;
   mode_count += diff;
@@ -94,6 +94,7 @@ void doGraphics()
       if (mode_count >= A_OAM_TIME)
       {
         mode = A_VRAM;
+        requestInterrupt(LCD_STAT);
         stat_value = readMemory(STAT);
         stat_value |= 0x2;
         writeMemory(STAT, stat_value);
@@ -105,6 +106,7 @@ void doGraphics()
       if (mode_count >= A_VRAM_TIME)
       {
         mode = H_BLANK;
+        requestInterrupt(LCD_STAT);
         stat_value = readMemory(STAT);
         stat_value &= ~0x2;
         writeMemory(STAT, stat_value);
@@ -118,6 +120,7 @@ void doGraphics()
         if (IO_PORTS[0x44] >= MAX_VISIBLE_SCANLINE)
         {
           mode = V_BLANK;
+          requestInterrupt(LCD_STAT);
           stat_value = readMemory(STAT);
           stat_value |= 0x1;
           writeMemory(STAT, stat_value);
@@ -130,6 +133,7 @@ void doGraphics()
           stat_value |= 0x2;
           writeMemory(STAT, stat_value);
           requestInterrupt(BLANK);
+          requestInterrupt(LCD_STAT);
           renderScanline();
         }
       }
@@ -138,6 +142,7 @@ void doGraphics()
       if (mode_count >= A_V_BLANK_TIME)
       {
           mode_count = 0;
+          requestInterrupt(LCD_STAT);
           SDL_UpdateTexture(texture, NULL, framebuffer, SCREEN_WIDTH * sizeof(uint32_t));
           SDL_RenderClear(renderer);
           SDL_RenderCopy(renderer, texture, NULL, NULL);
@@ -150,6 +155,8 @@ void doGraphics()
       }
       break;
   }
+  if (IO_PORTS[0x44] == IO_PORTS[0x45] && (stat_value & 0x40))
+    requestInterrupt(LCD_STAT);
 }
 
 void renderScanline()
@@ -242,8 +249,65 @@ void renderScanline()
       }
     }
   }
+  // Render sprites
   if (lcdc & 0x2)
   {
-
+    uint8_t sprite_big = (lcdc & 0x4) ? 16 : 8;
+    // Iterate over all the sprites in OAM
+    for (int i = 0; i < 40; ++i)
+    {
+      // Each sprite is 4 bytes in OAM
+      size_t index = i * 4;
+      uint8_t x = readMemory(OAM_LOWER + index + 1) - 8;
+      uint8_t y = readMemory(OAM_LOWER + index) - 16;
+      uint8_t tile_addr = readMemory(OAM_LOWER + index + 2);
+      uint8_t attr = readMemory(OAM_LOWER + index + 3);
+      uint8_t scanline = IO_PORTS[0x44];
+      // Is the sprite rendered
+      if (scanline >= y && (scanline < y + sprite_big))
+      {
+        int line = scanline - y;
+        if (attr & 0x40)
+        {
+          line -= sprite_big;
+          line *= -2;
+        }
+        else
+          line *= 2;
+        uint16_t addr = (TILE_DATA_BASE_1 + (tile_addr * 16)) + line;
+        uint8_t pixel_1 = readMemory(addr);
+        uint8_t pixel_2 = readMemory(addr + 1);
+        // Each tile is 8 pixel long
+        for (int pixel = 7; pixel >= 0; --pixel)
+        {
+          // If x-flip, flip pixel
+          int col = pixel;
+          if (attr & 0x20)
+            col = (col - 7) * (-1);
+          uint8_t color = (pixel_2 & (1 << col)) | (pixel_1 & (1 << (col + 1)));
+          uint16_t pal_addr = (attr & 0x10) ? 0xff49 : 0xff48;
+          uint8_t pal = readMemory(pal_addr);
+          pal = (pal & (1 << color)) | (pal & (1 << (color + 1)));
+          if (pal == 0)
+            continue;
+          int pos = x - pixel + 7;
+          switch(pal)
+          {
+            case 0:
+              framebuffer[pos + SCREEN_HEIGHT * scanline] = 0xFFFFFFFF;
+              break;
+            case 1:
+              framebuffer[pos + SCREEN_HEIGHT * scanline] = 0x2C2A2AFF;
+              break;
+            case 2:
+              framebuffer[pos + SCREEN_HEIGHT * scanline] = 0x706969FF;
+              break;
+            case 3:
+              framebuffer[pos + SCREEN_HEIGHT * scanline] = 0x000000FF;
+              break;
+          }
+        }
+      }
+    }
   }
 }

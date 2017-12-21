@@ -9,8 +9,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-// #define DEBUG
-
 // CPU specs
 
 // Clock speed

@@ -1,4 +1,5 @@
 
+#include <stdbool.h>
 #include <SDL2/SDL.h>
 #include "cpu.h"
 #include "util.h"
@@ -236,18 +237,14 @@ void GBStartUp()
 
 void startExecutionGB()
 {
-  uint32_t timer = 0;
-  uint32_t last_time = 0;
-  uint64_t current_cycle_counter = 0;
   uint64_t last_cycle_count = 0;
   uint32_t elapsed = 0;
+  bool debug = true;
+  uint16_t break_on;
   initGraphics();
   // For halting, etc.
   program_state = RUNNING;
   uint8_t instruction = 0;
-#ifdef DEBUG
-  char dbg;
-#endif
   // Initialize everything
   initMemory();
   initRegisters();
@@ -258,29 +255,43 @@ void startExecutionGB()
   printRegisters();
 #endif
 
-  current_cycle_counter = cycle_counter;
   while (program_state == RUNNING)
   {
     elapsed = SDL_GetTicks();
     while (cycle_counter - last_cycle_count <= 4194304)
     {
+      if (pc == break_on) 
+        debug = true;
+      if (debug)
+      {
+        char choice = getchar();
+        switch (choice)
+        {
+          case 'd':
+            debug = false;
+            break;
+          case 'j':
+            scanf("%hx", &pc);
+            break;
+          case 'e':
+            scanf("%hx", &break_on);
+            debug = false;
+            break;
+        }
+        printRegisters();
+      }
       instruction = readMemory(pc);
       decodeAndExecuteInstruction(instruction);
       doGraphics();
-      //doEventLoop();
+      if (cycle_counter % 50000)
+        doEventLoop();
       doInterrupts();
     }
     elapsed = SDL_GetTicks() - elapsed;
     printf("Elapsed: %d\n", elapsed);
-#ifdef DEBUG
-  printRegisters();
-  dbg = getchar();
-#endif
-    timer = SDL_GetTicks() - last_time;
     last_cycle_count = cycle_counter;
     // if (1000 - (int) timer > 0)
     //  SDL_Delay(1000 - timer);
-    last_time = SDL_GetTicks();
   }
 }
 
