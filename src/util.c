@@ -12,5 +12,8 @@ void printRegisters()
   printf("Flags: %hhx; Stack pointer: %hx; Program counter: %hx;\n",
       flags, stack_ptr, pc);
   // Cycle counter
-  printf("Cycle counter: %llx;\n", cycle_counter);
+  printf("Cycle counter: %lx;\n", cycle_counter);
+  printf("Interrupt master flag: %d; Interrupt flag: %hhx, Interrupt enable %hhx;\n",
+      imf, IO_PORTS[0x0F], ier);
+  printf("LCDC: %hhx; STAT: %hhx;\n", IO_PORTS[0x40], IO_PORTS[0x41]);
 }

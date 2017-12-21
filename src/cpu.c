@@ -185,6 +185,10 @@ int writeMemory(uint16_t addr, uint8_t data)
   {
     if (addr == DMA_REG)
       executeDMA(data);
+    else if (addr == 0xff02 && data == 0x81)
+      printf("%c\n", IO_PORTS[0x1]);
+    else if (addr == 0xff44)
+      IO_PORTS[0x44] = 0;
     else
       IO_PORTS[addr - IO_REGS_LOWER] = data;
     return SUCCESS;
@@ -222,6 +226,7 @@ void GBStartUp()
   IO_PORTS[0x25] = 0xF3;
   IO_PORTS[0x26] = 0xF1;
   IO_PORTS[0x40] = 0x91;
+  IO_PORTS[0x41] = 0x85;
   IO_PORTS[0x42] = 0;
   IO_PORTS[0x43] = 0;
   IO_PORTS[0x45] = 0;
@@ -230,6 +235,7 @@ void GBStartUp()
   IO_PORTS[0x49] = 0x00;
   IO_PORTS[0x4a] = 0x00;
   IO_PORTS[0x4b] = 0x00;
+  IO_PORTS[0xf] = 0xe1;
   ier = 0;
   imf = 1;
   return;

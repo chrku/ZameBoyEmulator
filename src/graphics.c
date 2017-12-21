@@ -56,7 +56,8 @@ int initGraphics()
   SDL_RenderCopy(renderer, texture, NULL, NULL);
   SDL_RenderPresent(renderer); 
   IO_PORTS[0x44] = 0;
-  return 1;
+  mode = V_BLANK;
+  return 0;
 }
 
 void doGraphics()
@@ -128,6 +129,7 @@ void doGraphics()
         else
         {
           IO_PORTS[0x44]++;
+          printf("%hx;\n", IO_PORTS[0x44]);
           mode = A_OAM;
           stat_value = readMemory(STAT);
           stat_value |= 0x2;
@@ -155,6 +157,10 @@ void doGraphics()
       }
       break;
   }
+  if (IO_PORTS[0x44] == IO_PORTS[0x45])
+    IO_PORTS[0x41] |= 0x4;
+  else
+    IO_PORTS[0x41] &= ~0x4;
   if (IO_PORTS[0x44] == IO_PORTS[0x45] && (stat_value & 0x40))
     requestInterrupt(LCD_STAT);
 }

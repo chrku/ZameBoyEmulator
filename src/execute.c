@@ -484,27 +484,27 @@ void doPush(uint8_t instruction)
   {
     case PUSH_AF:
       // Save both regs on stack, decrement twice
-      writeMemory(stack_ptr, a_reg);
-      stack_ptr -= 1;
       writeMemory(stack_ptr, flags);
+      stack_ptr -= 1;
+      writeMemory(stack_ptr, a_reg);
       stack_ptr -= 1;
       break;
     case PUSH_BC:
-      writeMemory(stack_ptr, b_reg);
-      stack_ptr -= 1;
       writeMemory(stack_ptr, c_reg);
+      stack_ptr -= 1;
+      writeMemory(stack_ptr, b_reg);
       stack_ptr -= 1;
       break;
     case PUSH_DE: 
-      writeMemory(stack_ptr, d_reg);
-      stack_ptr -= 1;
       writeMemory(stack_ptr, e_reg);
+      stack_ptr -= 1;
+      writeMemory(stack_ptr, d_reg);
       stack_ptr -= 1;
       break;
     case PUSH_HL:
-      writeMemory(stack_ptr, h_reg);
-      stack_ptr -= 1;
       writeMemory(stack_ptr, l_reg);
+      stack_ptr -= 1;
+      writeMemory(stack_ptr, h_reg);
       stack_ptr -= 1;
       break;
   }
@@ -518,27 +518,27 @@ void doPop(uint8_t instruction)
     // Determine registers to pop into
     case POP_AF:
       stack_ptr += 1;
-      flags = readMemory(stack_ptr);
-      stack_ptr += 1;
       a_reg = readMemory(stack_ptr);
+      stack_ptr += 1;
+      flags = readMemory(stack_ptr);
       break;
     case POP_BC:
       stack_ptr += 1;
-      c_reg = readMemory(stack_ptr);
-      stack_ptr += 1;
       b_reg = readMemory(stack_ptr);
+      stack_ptr += 1;
+      c_reg = readMemory(stack_ptr);
       break;
     case POP_DE: 
       stack_ptr += 1;
-      e_reg = readMemory(stack_ptr);
-      stack_ptr += 1;
       d_reg = readMemory(stack_ptr);
+      stack_ptr += 1;
+      e_reg = readMemory(stack_ptr);
       break;
     case POP_HL:
       stack_ptr += 1;
-      l_reg = readMemory(stack_ptr);
-      stack_ptr += 1;
       h_reg = readMemory(stack_ptr);
+      stack_ptr += 1;
+      l_reg = readMemory(stack_ptr);
       break;
   }
  pc += POP_REGS_ARGLEN;
@@ -1789,7 +1789,7 @@ void callNZ()
   }
   else
   {
-    pc += CB_ARGLEN;
+    pc += 3;
   }
 }
 
@@ -1808,7 +1808,7 @@ void callZ()
   }
   else
   {
-    pc += CB_ARGLEN;
+    pc += 3;
   }
 }
 
@@ -1827,7 +1827,7 @@ void callNC()
   }
   else
   {
-    pc += CB_ARGLEN;
+    pc += 3;
   }
 }
 
@@ -1846,7 +1846,7 @@ void callC()
   }
   else
   {
-    pc += CB_ARGLEN;
+    pc += 3;
   }
 }
 
