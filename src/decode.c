@@ -60,19 +60,15 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       return SUCCESS;
     case JPNZ:
       jumpImmNZ();
-      sleepCycles(JP_CYCLES);
       return SUCCESS;
     case JPZ:
       jumpImmZ();
-      sleepCycles(JP_CYCLES);
       return SUCCESS;
     case JPNC:
       jumpImmNC();
-      sleepCycles(JP_CYCLES);
       return SUCCESS;
     case JPC:
       jumpImmC();
-      sleepCycles(JP_CYCLES);
       return SUCCESS;
     case JPHL:
       jumpHL();
@@ -84,68 +80,56 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       return SUCCESS;
     case JRNZ:
       jrNZ();
-      sleepCycles(JR_CYCLES);
       return SUCCESS;
     case JRZ:
       jrZ();
-      sleepCycles(JR_CYCLES);
       return SUCCESS;
     case JRNC:
       jrNC();
-      sleepCycles(JR_CYCLES);
       return SUCCESS;
     case JRC:
       jrC();
-      sleepCycles(JR_CYCLES);
       return SUCCESS;
     case CALL:
       call();
-      sleepCycles(CALL_CYCLES);
+      sleepCycles(24);
       return SUCCESS;
     case CALLNZ:
       callNZ();
-      sleepCycles(CALL_CYCLES);
       return SUCCESS;
     case CALLC:
       callC();
-      sleepCycles(CALL_CYCLES);
       return SUCCESS;
     case CALLNC:
       callNC();
-      sleepCycles(CALL_CYCLES);
       return SUCCESS;
     case CALLZ:
       callZ();
-      sleepCycles(CALL_CYCLES);
       return SUCCESS;
     case RET:
       ret();
-      sleepCycles(RET_CYCLES);
+      sleepCycles(16);
       return SUCCESS;
     case RETZ:
       retZ();
-      sleepCycles(RET_CYCLES);
       return SUCCESS;
     case RETC:
       retC();
-      sleepCycles(RET_CYCLES);
       return SUCCESS;
     case RETNC:
       retNC();
-      sleepCycles(RET_CYCLES);
       return SUCCESS;
     case RETNZ:
       retNZ();
-      sleepCycles(RET_CYCLES);
       return SUCCESS;
     case RETI:
       reti();
-      sleepCycles(RET_CYCLES);
+      sleepCycles(16);
       return SUCCESS;
     case RST_0: case RST_8: case RST_10: case RST_18: case RST_20:
     case RST_28: case RST_30: case RST_38:
       rst(instruction);
-      sleepCycles(RST_CYCLES);
+      sleepCycles(16);
       return SUCCESS;
     ////////////////////////////////////////////////////////////////////////////
     // 8-bit loads

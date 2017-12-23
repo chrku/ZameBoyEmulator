@@ -57,7 +57,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Cycle count for these loads
 #define LD_CYCLE_COUNT_REGISTER_IMMEDIATE_8 8
-// TODO: Fix name
 #define LD_REGISTER_IMMEDIATE_LEN 2
 
 #define LD_B_d8 0x06
@@ -543,7 +542,7 @@
 #define RES_LOWER 0x80
 #define RES_UPPER 0xbf
 
-#define JP_CYCLES 12
+#define JP_CYCLES 16
 
 #define JP 0xc3
 #define JPNZ 0xc2

@@ -237,7 +237,7 @@ int writeMemory(uint16_t addr, uint8_t data)
 
 void GBStartUp()
 {
-  IO_PORTS[0x04] = 0;
+  IO_PORTS[0x04] = 0xAB;
   IO_PORTS[0x05] = 0;
   IO_PORTS[0x06] = 0;
   IO_PORTS[0x07] = 0;
@@ -272,6 +272,7 @@ void GBStartUp()
   IO_PORTS[0xf] = 0xe1;
   ier = 0;
   imf = 0;
+  cycle_counter = 0x165ABCC;
   return;
 }
 
@@ -383,15 +384,30 @@ void doInterrupts()
     // I think its twelve??!!
     sleepCycles(12);
     if ((enabled_interrupts & 0x1) && (int_flags & 0x1))
+    {
+      IO_PORTS[0xff0f] &= ~0x1;
       pc = 0x40;
+    }
     else if ((enabled_interrupts & 0x2) && (int_flags & 0x2))
+    {
+      IO_PORTS[0xff0f] &= ~0x2;
       pc = 0x48;
+    }
     else if ((enabled_interrupts & 0x4) && (int_flags & 0x4))
+    {
+      IO_PORTS[0xff0f] &= ~0x4;
       pc = 0x50;
+    }
     else if ((enabled_interrupts & 0x8) && (int_flags & 0x8))
+    {
+      IO_PORTS[0xff0f] &= ~0x8;
       pc = 0x58;
+    }
     else if ((enabled_interrupts & 0x10) && (int_flags & 0x10))
+    {
+      IO_PORTS[0xff0f] &= ~0x10;
       pc = 0x60;
+    }
   }
 }
 

@@ -18,4 +18,5 @@ void printRegisters()
   printf("LCDC: %hhx; STAT: %hhx; LY: %hhx\n", IO_PORTS[0x40], IO_PORTS[0x41], IO_PORTS[0x44]);
   printf("TIMA: %hx TMA: %hx; DIV %hx\n", readMemory(TIMA), readMemory(TMA), IO_PORTS[0x4]);
   printf("Memory around stack_ptr %hhx %hhx %hhx\n", readMemory(stack_ptr), readMemory(stack_ptr + 1), readMemory(stack_ptr - 1));
+  printf("Time in DClocks: %lx\n", cycle_counter / 2);
 }

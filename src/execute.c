@@ -1722,9 +1722,15 @@ void jumpImmZ()
   uint8_t lower = readMemory(pc + 1);
   uint8_t higher = readMemory(pc + 2);
   if ((flags & 0x80))
+  {
+    sleepCycles(16);
     pc = (((uint16_t) higher) << 8) | lower;
+  }
   else
+  {
+    sleepCycles(12);
     pc += 3;
+  }
 }
 
 void jumpImmNZ()
@@ -1732,9 +1738,15 @@ void jumpImmNZ()
   uint8_t lower = readMemory(pc + 1);
   uint8_t higher = readMemory(pc + 2);
   if (!(flags & 0x80))
+  {
+    sleepCycles(16);
     pc = (((uint16_t) higher) << 8) | lower;
+  }
   else
+  {
+    sleepCycles(12);
     pc += 3;
+  }
 }
 
 void jumpImmNC()
@@ -1742,9 +1754,15 @@ void jumpImmNC()
   uint8_t lower = readMemory(pc + 1);
   uint8_t higher = readMemory(pc + 2);
   if (!(flags & 0x10))
+  {
+    sleepCycles(16);
     pc = (((uint16_t) higher) << 8) | lower;
+  }
   else
+  {
+    sleepCycles(12);
     pc += 3;
+  }
 }
 
 void jumpImmC()
@@ -1752,9 +1770,15 @@ void jumpImmC()
   uint8_t lower = readMemory(pc + 1);
   uint8_t higher = readMemory(pc + 2);
   if ((flags & 0x10))
+  {
+    sleepCycles(16);
     pc = (((uint16_t) higher) << 8) | lower;
+  }
   else
+  {
+    sleepCycles(12);
     pc += 3;
+  }
 }
 
 void jumpHL()
@@ -1773,10 +1797,14 @@ void jrNZ()
   uint8_t imm = readMemory(pc + 1);
   if (!(flags & 0x80))
   {
+    sleepCycles(12);
     pc += (2 + ((int8_t) imm));
   }
   else
+  {
+    sleepCycles(8);
     pc += 2;
+  }
 }
 
 void jrZ()
@@ -1784,10 +1812,14 @@ void jrZ()
   uint8_t imm = readMemory(pc + 1);
   if ((flags & 0x80))
   {
+    sleepCycles(12);
     pc += (2 + ((int8_t) imm));
   }
   else
+  {
+    sleepCycles(8);
     pc += 2;
+  }
 }
 
 void jrC()
@@ -1795,10 +1827,14 @@ void jrC()
   uint8_t imm = readMemory(pc + 1);
   if ((flags & 0x10))
   {
+    sleepCycles(12);
     pc += (2 + ((int8_t) imm));
   }
   else
+  {
+    sleepCycles(8);
     pc += 2;
+  }
 }
 
 void jrNC()
@@ -1806,10 +1842,14 @@ void jrNC()
   uint8_t imm = readMemory(pc + 1);
   if (!(flags & 0x10))
   {
+    sleepCycles(12);
     pc += (2 + ((int8_t) imm));
   }
   else
+  {
+    sleepCycles(8);
     pc += 2;
+  }
 }
 
 void call()
@@ -1835,10 +1875,12 @@ void callNZ()
     writeMemory(stack_ptr, (uint8_t) pc);
     stack_ptr -= 1;
     writeMemory(stack_ptr, (uint8_t) (pc >> 8));
+    sleepCycles(24);
     pc = (((uint16_t) higher) << 8) | lower;
   }
   else
   {
+    sleepCycles(12);
     pc += 3;
   }
 }
@@ -1854,10 +1896,12 @@ void callZ()
     writeMemory(stack_ptr, (uint8_t) pc);
     stack_ptr -= 1;
     writeMemory(stack_ptr, (uint8_t) (pc >> 8));
+    sleepCycles(24);
     pc = (((uint16_t) higher) << 8) | lower;
   }
   else
   {
+    sleepCycles(12);
     pc += 3;
   }
 }
@@ -1873,10 +1917,12 @@ void callNC()
     writeMemory(stack_ptr, (uint8_t) pc);
     stack_ptr -= 1;
     writeMemory(stack_ptr, (uint8_t) (pc >> 8));
+    sleepCycles(24);
     pc = (((uint16_t) higher) << 8) | lower;
   }
   else
   {
+    sleepCycles(12);
     pc += 3;
   }
 }
@@ -1892,10 +1938,12 @@ void callC()
     writeMemory(stack_ptr, (uint8_t) pc);
     stack_ptr -= 1;
     writeMemory(stack_ptr, (uint8_t) (pc >> 8));
+    sleepCycles(24);
     pc = (((uint16_t) higher) << 8) | lower;
   }
   else
   {
+    sleepCycles(12);
     pc += 3;
   }
 }
@@ -1957,10 +2005,12 @@ void retNZ()
     stack_ptr += 1;
     lower = readMemory(stack_ptr);
     stack_ptr += 1;
+    sleepCycles(20);
     pc = (((uint16_t) higher) << 8) | lower;
   }
   else
   {
+    sleepCycles(8);
     pc += CB_ARGLEN;
   }
 }
@@ -1975,10 +2025,12 @@ void retZ()
     stack_ptr += 1;
     lower = readMemory(stack_ptr);
     stack_ptr += 1;
+    sleepCycles(20);
     pc = (((uint16_t) higher) << 8) | lower;
   }
   else
   {
+    sleepCycles(8);
     pc += CB_ARGLEN;
   }
 }
@@ -1993,10 +2045,12 @@ void retC()
     stack_ptr += 1;
     lower = readMemory(stack_ptr);
     stack_ptr += 1;
+    sleepCycles(20);
     pc = (((uint16_t) higher) << 8) | lower;
   }
   else
   {
+    sleepCycles(8);
     pc += CB_ARGLEN;
   }
 }
@@ -2011,10 +2065,12 @@ void retNC()
     stack_ptr += 1;
     lower = readMemory(stack_ptr);
     stack_ptr += 1;
+    sleepCycles(20);
     pc = (((uint16_t) higher) << 8) | lower;
   }
   else
   {
+    sleepCycles(8);
     pc += CB_ARGLEN;
   }
 }
