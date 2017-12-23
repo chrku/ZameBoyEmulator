@@ -450,22 +450,23 @@ void doLoadHLSP()
 
 void doLoadHLSPN()
 {
-  uint16_t offset = readMemory(pc + 1);
+  int8_t offset = (int8_t) readMemory(pc + 1);
   uint16_t value = stack_ptr + offset;
   // This instruction affects the Z H C S flags
   h_reg = (uint8_t) (value >> 8);
   l_reg = (uint8_t) value;
   flags = 0;
   // Check for carry
-  if ((uint32_t) stack_ptr + offset > 0xffff)
-    flags |= 0x20;
-  else
-    flags &= ~(0x20);
-  // Check for half carry
-  if ((stack_ptr & 0xfff) + (offset & 0xfff) > 0xfff)
+  // WTF
+  uint16_t val = stack_ptr ^ offset ^ ((stack_ptr + offset) & 0xffff);
+  if ((val & 0x100) == 0x100)
     flags |= 0x10;
   else
     flags &= ~0x10;
+  if ((val & 0x10) & 0x10)
+    flags |= 0x20;
+  else
+    flags &= ~0x20;
   pc += LDHL_ARGLEN;
 }
 
@@ -1234,39 +1235,40 @@ void add16(uint8_t instruction)
       arg = stack_ptr;
       break;
   }
+  uint16_t res = dest + arg;
   // Flags
   // Check for carry
-  if ((uint32_t) dest + arg > 0xffff)
-    flags |= 0x20;
-  else
-    flags &= ~(0x20);
-  // Check for half carry
-  if ((dest & 0xfff) + (arg & 0xfff) > 0xfff)
+  if (res < dest)
     flags |= 0x10;
   else
-    flags &= ~0x10;
+    flags &= ~(0x10);
+  // Check for half carry
+  if ((res ^ dest ^ arg) & 0x1000)
+    flags |= 0x20;
+  else
+    flags &= ~0x20;
   flags &= ~0x40;
-  dest += arg;
-  h_reg = (uint8_t) (dest >> 8);
-  l_reg = (uint8_t) dest;
+  h_reg = (uint8_t) (res >> 8);
+  l_reg = (uint8_t) res;
   pc += ALU_16_REG_ARGLEN;
 }
 
 void addSPN()
 {
-  uint8_t imm = readMemory(pc + 1);
+  int8_t imm = (int8_t) readMemory(pc + 1);
+  uint16_t res = stack_ptr + imm;
   flags = 0;
   // Check for carry
-  if ((uint32_t) stack_ptr + imm > 0xffff)
+  if ((res & 0xf) < (stack_ptr & 0xf))
     flags |= 0x20;
   else
     flags &= ~(0x20);
   // Check for half carry
-  if ((stack_ptr & 0xfff) + (imm & 0xfff) > 0xfff)
+  if ((res & 0xff) < (stack_ptr & 0xff))
     flags |= 0x10;
   else
     flags &= ~0x10;
-  stack_ptr += imm;
+  stack_ptr = res;
   pc += ALU_16_IMM_ARGLEN;
 }
 
@@ -1431,46 +1433,70 @@ void rlc(uint8_t* arg, uint16_t addr)
   if (arg == NULL)
   {
     value = readMemory(addr);
-    flags |= ((value & 0x80) >> 3);
-    value = (value << 1) | (value >> 7);
+    if (value & 0x80)
+      flags |= 0x10;
+    else
+      flags &= ~0x10;
+    value = (value << 1) | ((flags & 0x10) >> 4);
     writeMemory(addr, value);
-    if (value == 0)
-      flags |= 0x80;
   }
   else
   {
-    flags |= ((*arg & 0x80) >> 3);
-    *arg = (*arg << 1) | (*arg >> 7);
-    if (*arg == 0)
-      flags |= 0x80;
+    if (*arg & 0x80)
+      flags |= 0x10;
+    else
+      flags &= ~0x10;
+    *arg = (*arg << 1) | ((flags & 0x10) >> 4);
   }
   flags &= ~0x40;
   flags &= ~0x20;
+  flags &= ~0x80;
   pc += CB_ARGLEN;
 }
 
 void rl(uint8_t* arg, uint16_t addr)
 {
   uint8_t value;
-  uint8_t old_flag = 0;
+  uint8_t old_flag = (flags & 0x10);
   // If arg is NULL, we work with (HL)
   if (arg == NULL)
   {
     value = readMemory(addr);
-    old_flag = (value & 0x80) >> 3;
-    value = (value << 1) | ((flags & 0x10) >> 4);
-    flags |= old_flag;
+    if (value & 0x80)
+      flags |= 0x10;
+    else
+      flags &= 0x10;
+    value <<= 1;
+    if (old_flag)
+      value |= 0x1;
+    else
+      value &= ~0x1;
     writeMemory(addr, value);
     if (value == 0)
       flags |= 0x80;
+    else
+      flags &= ~0x80;
   }
   else
   {
-    old_flag = (*arg & 0x80) >> 3;
-    *arg = (*arg << 1) | ((flags & 0x10) >> 4);
-    flags |= old_flag;
-    if (*arg == 0)
-      flags |= 0x80;
+    if (*arg & 0x80)
+      flags |= 0x10;
+    else
+      flags &= 0x10;
+    *arg <<= 1;
+    if (old_flag)
+      *arg |= 0x1;
+    else
+      *arg &= ~0x1;
+    if (arg == &a_reg)
+      flags &= ~0x80;
+    else
+    {
+      if (*arg == 0)
+        flags |= 0x80;
+      else
+        flags &= ~0x80;
+    }
   }
   flags &= ~0x40;
   flags &= ~0x20;

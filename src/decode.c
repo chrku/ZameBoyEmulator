@@ -517,7 +517,7 @@ int decodeAndExecuteCB(uint8_t instruction)
   }
   else if (instruction >= BIT_LOWER && instruction <= BIT_UPPER)
   {
-    bit_no = (((instruction - BIT_LOWER) + 1) / 8);
+    bit_no = (((instruction - BIT_LOWER)) / 8);
     bit(arg, addr, bit_no);
     if (arg == NULL)
       sleepCycles(CB_CYCLES_ADDR);
@@ -526,7 +526,7 @@ int decodeAndExecuteCB(uint8_t instruction)
   }
   else if (instruction >= RES_LOWER && instruction <= RES_UPPER)
   {
-    bit_no = (((instruction - RES_LOWER) + 1) / 8);
+    bit_no = (((instruction - RES_LOWER)) / 8);
     res(arg, addr, bit_no);
     if (arg == NULL)
       sleepCycles(CB_CYCLES_ADDR);
@@ -535,7 +535,7 @@ int decodeAndExecuteCB(uint8_t instruction)
   }
   else if (instruction >= SET_LOWER && instruction <= SET_UPPER)
   {
-    bit_no = (((instruction - SET_LOWER) + 1) / 8);
+    bit_no = (((instruction - SET_LOWER)) / 8);
     set(arg, addr, bit_no);
     if (arg == NULL)
       sleepCycles(CB_CYCLES_ADDR);
