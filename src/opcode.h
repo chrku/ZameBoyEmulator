@@ -369,6 +369,7 @@
 #define SBC_AL 0x9d
 
 #define SBC_A_IND 0x9e
+#define SBC_A_d8 0xde
 
 // AND Logical and
 

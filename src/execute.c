@@ -252,7 +252,7 @@ void doRegisterIndirectToRegister(uint8_t instruction)
     case LD_H_HL:
       h_reg = value;
       break;
-    case LD_L_H:
+    case LD_L_HL:
       l_reg = value;
       break;
   }
@@ -624,6 +624,7 @@ void add(uint8_t instruction)
 void adc(uint8_t instruction)
 {
   uint8_t summand = 0;
+  uint8_t carry = 0;
   uint16_t addr = 0;
   // Determine summand
   switch(instruction)
@@ -659,10 +660,10 @@ void adc(uint8_t instruction)
   }
   // Add carry flag
   if (flags & 0x10)
-    summand += 1;
+    carry = 1;
   // Set flags
   // Carry flag
-  if (((uint16_t) a_reg) + summand > 0xff)
+  if (((uint16_t) a_reg) + summand + carry > 0xff)
   {
     flags |= 0x10;
   }
@@ -673,7 +674,7 @@ void adc(uint8_t instruction)
   // Clear the n flag
   flags &= ~(0x40);
   // Half carry flag
-  if (((a_reg & 0xf) + (summand & 0xf)) & 0x10) 
+  if ((((int) (a_reg & 0xf)) + ( (int) (summand & 0xf)) + (int) carry) > 0xf) 
   {
     flags |= 0x20;
   }
@@ -681,7 +682,7 @@ void adc(uint8_t instruction)
   {
     flags &= ~(0x20);
   }
-  a_reg += summand;
+  a_reg += (summand + carry);
   if (a_reg == 0)
   {
     flags |= 0x80;
@@ -779,6 +780,7 @@ void sub(uint8_t instruction)
 void sbc(uint8_t instruction)
 {
   uint8_t arg = 0;
+  uint8_t carry = 0;
   uint16_t addr = 0;
   // Determine arg
   switch(instruction)
@@ -808,12 +810,15 @@ void sbc(uint8_t instruction)
       addr = (((uint16_t) h_reg) << 8) | l_reg;
       arg = readMemory(addr);
       break;
+    case SBC_A_d8:
+      arg = readMemory(pc + 1);
+      break;
   }
   // Add carry flag
   if (flags & 0x10)
-    arg += 1;
+    carry = 1;
   // Flags
-  if ((int)(a_reg) - (int)(arg) < 0)
+  if ((int)(a_reg) - (int)(arg) - (int)(carry) < 0)
   {
     flags |= 0x10;
   }
@@ -824,7 +829,7 @@ void sbc(uint8_t instruction)
   // Set the n flag
   flags |= 0x40;
   // Half carry flag
-  if ((int)(a_reg & 0xf) - (int)(arg & 0xf) < 0)
+  if ((int)(a_reg & 0xf) - (int)(arg & 0xf) - (int)carry < 0)
   {
     flags |= 0x20;
   }
@@ -832,7 +837,9 @@ void sbc(uint8_t instruction)
   {
     flags &= ~(0x20);
   }
-  if (a_reg - arg == 0)
+  a_reg -= arg;
+  a_reg -= carry;
+  if (a_reg == 0)
   {
     flags |= 0x80;
   }
@@ -840,8 +847,14 @@ void sbc(uint8_t instruction)
   {
     flags &= ~(0x80);
   }
-  a_reg -= arg;
-  pc += ALU_REG_ARGLEN;
+  if (instruction != SBC_A_d8)
+  {
+    pc += ALU_REG_ARGLEN;
+  }
+  else
+  {
+    pc += ALU_IMM_ARGLEN;
+  }
 }
 
 void land(uint8_t instruction)
@@ -1418,7 +1431,7 @@ void rlc(uint8_t* arg, uint16_t addr)
   if (arg == NULL)
   {
     value = readMemory(addr);
-    flags |= ((*arg & 0x80) >> 3);
+    flags |= ((value & 0x80) >> 3);
     value = (value << 1) | (value >> 7);
     writeMemory(addr, value);
     if (value == 0)
