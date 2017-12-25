@@ -95,7 +95,6 @@ void doGraphics()
       if (mode_count >= A_OAM_TIME)
       {
         mode = A_VRAM;
-        requestInterrupt(LCD_STAT);
         stat_value = readMemory(STAT);
         stat_value |= 0x2;
         writeMemory(STAT, stat_value);
@@ -109,6 +108,8 @@ void doGraphics()
         mode = H_BLANK;
         stat_value = readMemory(STAT);
         stat_value &= ~0x2;
+        if (stat_value & 0x8)
+          requestInterrupt(LCD_STAT);
         writeMemory(STAT, stat_value);
         mode_count = 0;
       }
@@ -120,7 +121,9 @@ void doGraphics()
         if (IO_PORTS[0x44] >= MAX_VISIBLE_SCANLINE)
         {
           mode = V_BLANK;
-          requestInterrupt(LCD_STAT);
+          if (stat_value & 0x10)
+            requestInterrupt(LCD_STAT);
+          requestInterrupt(BLANK);
           stat_value = readMemory(STAT);
           stat_value |= 0x1;
           writeMemory(STAT, stat_value);
@@ -132,8 +135,8 @@ void doGraphics()
           stat_value = readMemory(STAT);
           stat_value |= 0x2;
           writeMemory(STAT, stat_value);
-          requestInterrupt(BLANK);
-          requestInterrupt(LCD_STAT);
+          if (stat_value & 0x20)
+            requestInterrupt(LCD_STAT);
           renderScanline();
         }
       }

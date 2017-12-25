@@ -47,11 +47,7 @@ void doHalt()
 {
   // Increment the PC
   pc += HALT_ARGLEN;
-  // TODO: Implement proper halting (will need interrupts first!)
-  printf("HALT: q to quit\n");
-  char c = getchar();
-  if (c == 'q')
-    program_state = OFF;
+  halted = 1;
 }
 
 void doLoadRegisterRegister(uint8_t instruction)
@@ -2110,5 +2106,5 @@ void reti()
   higher = readMemory(stack_ptr);
   stack_ptr += 1;
   pc = (((uint16_t) higher) << 8) | lower;
-  ei();
+  imf = 1;
 }

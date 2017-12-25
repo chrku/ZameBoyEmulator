@@ -96,7 +96,7 @@ extern uint8_t l_reg;
 extern uint64_t cycle_counter;
 
 extern uint64_t timer_freq;
-extern uint64_t current_timer_value;
+extern int64_t current_timer_value;
 extern uint64_t divider_time;
 
 // IO Registers and IER
@@ -121,6 +121,9 @@ extern uint16_t pc; // Program counter
 
 // Program state
 extern int program_state;
+extern int halted;
+
+#define HALTED 0x4f
 
 // Memory
 

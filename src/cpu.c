@@ -22,6 +22,7 @@ uint8_t h_reg = 0;
 uint8_t l_reg = 0;
 uint8_t flags = 0;
 uint64_t cycle_counter = 0;
+int halted = 0;
 
 
 // IO Registers
@@ -35,7 +36,7 @@ uint16_t pc = START_LOCATION;
 uint16_t stack_ptr = 0;
 
 uint64_t timer_freq = 0;
-uint64_t current_timer_value = 1024;
+int64_t current_timer_value = 1024;
 uint64_t divider_time = 0;
 
 // RAM and VRAM
@@ -132,11 +133,13 @@ uint8_t readMemory(uint16_t addr)
     else
       return IO_PORTS[addr - IO_REGS_LOWER];
   }
-  else 
+  else if (addr == 0xffff)
   {
     return ier;
   }
   // TODO: Implement the rest of the memory map
+  printf("ERROR\n");
+  exit(-1);
   return 0;
 }
 
@@ -226,7 +229,7 @@ int writeMemory(uint16_t addr, uint8_t data)
       IO_PORTS[addr - IO_REGS_LOWER] = data;
     return SUCCESS;
   }
-  else 
+  else if (addr == 0xffff)
   {
     ier = data;
     return SUCCESS;
@@ -281,7 +284,7 @@ void startExecutionGB()
   uint64_t last_cycle_count = 0;
   uint32_t elapsed = 0;
   bool debug = true;
-  uint16_t break_on;
+  uint16_t break_on = 0xffff;
   initGraphics();
   // For halting, etc.
   program_state = RUNNING;
@@ -321,8 +324,15 @@ void startExecutionGB()
         }
         printRegisters();
       }
-      instruction = readMemory(pc);
-      decodeAndExecuteInstruction(instruction);
+      if (!halted)
+      {
+        instruction = readMemory(pc);
+        decodeAndExecuteInstruction(instruction);
+      }
+      else
+      {
+        sleepCycles(4);
+      }
       doGraphics();
       if (cycle_counter % 50000)
         doEventLoop();
@@ -380,7 +390,7 @@ void doInterrupts()
     stack_ptr -= 1;
     writeMemory(stack_ptr, (uint8_t) (pc >> 8));
     stack_ptr -= 1; 
-    writeMemory(stack_ptr, (uint8_t) (pc));
+    writeMemory(stack_ptr, (uint8_t) pc);
     // I think its twelve??!!
     sleepCycles(12);
     if ((enabled_interrupts & 0x1) && (int_flags & 0x1))
@@ -413,6 +423,8 @@ void doInterrupts()
 
 void requestInterrupt(interrupt i)
 {
+  // Clear halt
+  halted = 0;
   switch(i)
   {
     case BLANK:
