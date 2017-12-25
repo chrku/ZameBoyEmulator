@@ -475,7 +475,9 @@ void doLoadSP16()
   uint16_t addr_low = readMemory(pc + 1);
   uint16_t addr_high = readMemory(pc + 2);
   uint16_t addr = (addr_high << 8) | addr_low;
-  writeMemory(addr, stack_ptr);
+  writeMemory(addr + 1, (uint8_t) (stack_ptr >> 8));
+  writeMemory(addr, (uint8_t) stack_ptr);
+
   pc += LD_d16_SP_ARGLEN;
 }
 
@@ -486,27 +488,27 @@ void doPush(uint8_t instruction)
     case PUSH_AF:
       // Save both regs on stack, decrement twice
       stack_ptr -= 1;
-      writeMemory(stack_ptr, flags);
-      stack_ptr -= 1;
       writeMemory(stack_ptr, a_reg);
+      stack_ptr -= 1;
+      writeMemory(stack_ptr, flags);
       break;
     case PUSH_BC:
       stack_ptr -= 1;
-      writeMemory(stack_ptr, c_reg);
-      stack_ptr -= 1;
       writeMemory(stack_ptr, b_reg);
+      stack_ptr -= 1;
+      writeMemory(stack_ptr, c_reg);
       break;
     case PUSH_DE: 
       stack_ptr -= 1;
-      writeMemory(stack_ptr, e_reg);
-      stack_ptr -= 1;
       writeMemory(stack_ptr, d_reg);
+      stack_ptr -= 1;
+      writeMemory(stack_ptr, e_reg);
       break;
     case PUSH_HL:
       stack_ptr -= 1;
-      writeMemory(stack_ptr, l_reg);
-      stack_ptr -= 1;
       writeMemory(stack_ptr, h_reg);
+      stack_ptr -= 1;
+      writeMemory(stack_ptr, l_reg);
       break;
   }
   pc += PUSH_REGS_ARGLEN;
@@ -518,28 +520,28 @@ void doPop(uint8_t instruction)
   {
     // Determine registers to pop into
     case POP_AF:
-      a_reg = readMemory(stack_ptr);
-      stack_ptr += 1;
       flags = readMemory(stack_ptr);
+      stack_ptr += 1;
+      a_reg = readMemory(stack_ptr);
       flags &= 0xf0;
       stack_ptr += 1;
       break;
     case POP_BC:
-      b_reg = readMemory(stack_ptr);
-      stack_ptr += 1;
       c_reg = readMemory(stack_ptr);
+      stack_ptr += 1;
+      b_reg = readMemory(stack_ptr);
       stack_ptr += 1;
       break;
     case POP_DE: 
-      d_reg = readMemory(stack_ptr);
-      stack_ptr += 1;
       e_reg = readMemory(stack_ptr);
+      stack_ptr += 1;
+      d_reg = readMemory(stack_ptr);
       stack_ptr += 1;
       break;
     case POP_HL:
-      h_reg = readMemory(stack_ptr);
-      stack_ptr += 1;
       l_reg = readMemory(stack_ptr);
+      stack_ptr += 1;
+      h_reg = readMemory(stack_ptr);
       stack_ptr += 1;
       break;
   }
@@ -1438,6 +1440,10 @@ void rlc(uint8_t* arg, uint16_t addr)
     else
       flags &= ~0x10;
     value = (value << 1) | ((flags & 0x10) >> 4);
+    if (value == 0) 
+      flags |= 0x80;
+    else
+      flags &= ~0x80;
     writeMemory(addr, value);
   }
   else
@@ -1447,30 +1453,30 @@ void rlc(uint8_t* arg, uint16_t addr)
     else
       flags &= ~0x10;
     *arg = (*arg << 1) | ((flags & 0x10) >> 4);
+    if (*arg == 0) 
+      flags |= 0x80;
+    else
+      flags &= ~0x80;
   }
   flags &= ~0x40;
   flags &= ~0x20;
-  flags &= ~0x80;
   pc += CB_ARGLEN;
 }
 
 void rl(uint8_t* arg, uint16_t addr)
 {
   uint8_t value;
-  uint8_t old_flag = (flags & 0x10);
+  uint8_t old_flag = 0;
   // If arg is NULL, we work with (HL)
   if (arg == NULL)
   {
     value = readMemory(addr);
-    if (value & 0x80)
+    old_flag = (value & 0x80) >> 3;
+    value = (value << 1) | ((flags & 0x10) >> 4);
+    if (old_flag != 0)
       flags |= 0x10;
     else
-      flags &= 0x10;
-    value <<= 1;
-    if (old_flag)
-      value |= 0x1;
-    else
-      value &= ~0x1;
+      flags &= ~0x10;
     writeMemory(addr, value);
     if (value == 0)
       flags |= 0x80;
@@ -1479,24 +1485,16 @@ void rl(uint8_t* arg, uint16_t addr)
   }
   else
   {
-    if (*arg & 0x80)
+    old_flag = (*arg & 0x80) >> 3;
+    *arg = (*arg << 1) | ((flags & 0x10) >> 4);
+    if (old_flag != 0)
       flags |= 0x10;
     else
-      flags &= 0x10;
-    *arg <<= 1;
-    if (old_flag)
-      *arg |= 0x1;
-    else
-      *arg &= ~0x1;
-    if (arg == &a_reg)
+      flags &= ~0x10;
+    if (*arg == 0)
+      flags |= 0x80;
+    else 
       flags &= ~0x80;
-    else
-    {
-      if (*arg == 0)
-        flags |= 0x80;
-      else
-        flags &= ~0x80;
-    }
   }
   flags &= ~0x40;
   flags &= ~0x20;
@@ -1518,6 +1516,8 @@ void rrc(uint8_t* arg, uint16_t addr)
     writeMemory(addr, value);
     if (value == 0)
       flags |= 0x80;
+    else
+      flags &= ~0x80;
   }
   else
   {
@@ -1528,6 +1528,8 @@ void rrc(uint8_t* arg, uint16_t addr)
     *arg = (*arg >> 1) | (*arg << 7);
     if (*arg == 0)
       flags |= 0x80;
+    else
+      flags &= ~0x80;
   }
   flags &= ~0x40;
   flags &= ~0x20;
@@ -1551,6 +1553,8 @@ void rr(uint8_t* arg, uint16_t addr)
     writeMemory(addr, value);
     if (value == 0)
       flags |= 0x80;
+    else
+      flags &= ~0x80;
   }
   else
   {
@@ -1562,6 +1566,8 @@ void rr(uint8_t* arg, uint16_t addr)
       flags &= ~0x10;
     if (*arg == 0)
       flags |= 0x80;
+    else 
+      flags &= ~0x80;
   }
   flags &= ~0x40;
   flags &= ~0x20;
@@ -1575,18 +1581,28 @@ void sla(uint8_t* arg, uint16_t addr)
   {
 
     value = readMemory(addr);
-    flags |= ((value & 0x80) >> 3); 
+    if (value & 0x80)
+      flags |= 0x10;
+    else
+      flags &= ~0x10;
     value <<= 1;
     writeMemory(addr, value);
     if (value == 0)
       flags |= 0x80;
+    else
+      flags &= ~0x80;
   }
   else
   {
-    flags |= ((*arg & 0x80) >> 3); 
+    if (*arg & 0x80)
+      flags |= 0x10;
+    else
+      flags &= ~0x10;
     *arg <<= 1;
     if (*arg == 0)
       flags |= 0x80;
+    else
+      flags &= ~0x80;
   }
   flags &= ~0x40;
   flags &= ~0x20;
@@ -1600,30 +1616,30 @@ void sra(uint8_t* arg, uint16_t addr)
   {
 
     value = readMemory(addr);
-    flags |= ((value & 0x1) << 4); 
-    if (value & 0x80)
-    {
-      value >>= 1;
-      value |= 0x80;
-    }
+    if (value & 0x1)
+      flags |= 0x10;
     else
-      value >>= 1;
+      flags &= ~0x10;
+
+    value = (value >> 1) | (value & 0x80);
     writeMemory(addr, value);
     if (value == 0)
       flags |= 0x80;
+    else
+      flags &= ~0x80;
   }
   else
   {
-    flags |= ((*arg & 0x1) << 4); 
-    if (*arg & 0x80)
-    {
-      *arg >>= 1;
-      *arg |= 0x80;
-    }
+    if (*arg & 0x1)
+      flags |= 0x10;
     else
-      *arg >>= 1;
+      flags &= ~0x10;
+
+    *arg = (*arg >> 1) | (*arg & 0x80);
     if (*arg == 0)
       flags |= 0x80;
+    else
+      flags &= ~0x80;
   }
   flags &= ~0x40;
   flags &= ~0x20;
@@ -1637,18 +1653,28 @@ void srl(uint8_t* arg, uint16_t addr)
   {
 
     value = readMemory(addr);
-    flags |= ((value & 0x1) << 4); 
+    if (value & 0x1)
+      flags |= 0x10;
+    else
+      flags &= ~0x10;
     value >>= 1;
     writeMemory(addr, value);
     if (value == 0)
       flags |= 0x80;
+    else
+      flags &= ~0x80;
   }
   else
   {
-    flags |= ((*arg & 0x1) << 4); 
+    if (*arg & 0x1)
+      flags |= 0x10;
+    else
+      flags &= ~0x10;
     *arg >>= 1;
     if (*arg == 0)
       flags |= 0x80;
+    else
+      flags &= ~0x80;
   }
   flags &= ~0x40;
   flags &= ~0x20;
@@ -1664,16 +1690,16 @@ void bit(uint8_t* arg, uint16_t addr, uint8_t bit)
   {
     value = readMemory(addr);
     if (value & (1 << bit))
-      flags |= 0x80;
-    else
       flags &= ~0x80;
+    else
+      flags |= 0x80;
   }
   else
   {
     if (*arg & (1 << bit))
-      flags |= 0x80;
-    else
       flags &= ~0x80;
+    else
+      flags |= 0x80;
   }
   pc += CB_ARGLEN;
 }
@@ -1858,9 +1884,9 @@ void call()
   uint8_t higher = readMemory(pc + 2);
   pc += 3;
   stack_ptr -= 1;
-  writeMemory(stack_ptr, (uint8_t) pc);
-  stack_ptr -= 1;
   writeMemory(stack_ptr, (uint8_t) (pc >> 8));
+  stack_ptr -= 1;
+  writeMemory(stack_ptr, (uint8_t) pc);
   pc = (((uint16_t) higher) << 8) | lower;
 }
 
@@ -1872,9 +1898,9 @@ void callNZ()
     uint8_t higher = readMemory(pc + 2);
     pc += 3;
     stack_ptr -= 1;
-    writeMemory(stack_ptr, (uint8_t) pc);
-    stack_ptr -= 1;
     writeMemory(stack_ptr, (uint8_t) (pc >> 8));
+    stack_ptr -= 1;
+    writeMemory(stack_ptr, (uint8_t) pc);
     sleepCycles(24);
     pc = (((uint16_t) higher) << 8) | lower;
   }
@@ -1893,9 +1919,9 @@ void callZ()
     uint8_t higher = readMemory(pc + 2);
     pc += 3;
     stack_ptr -= 1;
-    writeMemory(stack_ptr, (uint8_t) pc);
-    stack_ptr -= 1;
     writeMemory(stack_ptr, (uint8_t) (pc >> 8));
+    stack_ptr -= 1;
+    writeMemory(stack_ptr, (uint8_t) pc);
     sleepCycles(24);
     pc = (((uint16_t) higher) << 8) | lower;
   }
@@ -1914,9 +1940,9 @@ void callNC()
     uint8_t higher = readMemory(pc + 2);
     pc += 3;
     stack_ptr -= 1;
-    writeMemory(stack_ptr, (uint8_t) pc);
-    stack_ptr -= 1;
     writeMemory(stack_ptr, (uint8_t) (pc >> 8));
+    stack_ptr -= 1;
+    writeMemory(stack_ptr, (uint8_t) pc);
     sleepCycles(24);
     pc = (((uint16_t) higher) << 8) | lower;
   }
@@ -1935,9 +1961,9 @@ void callC()
     uint8_t higher = readMemory(pc + 2);
     pc += 3;
     stack_ptr -= 1;
-    writeMemory(stack_ptr, (uint8_t) pc);
-    stack_ptr -= 1;
     writeMemory(stack_ptr, (uint8_t) (pc >> 8));
+    stack_ptr -= 1;
+    writeMemory(stack_ptr, (uint8_t) pc);
     sleepCycles(24);
     pc = (((uint16_t) higher) << 8) | lower;
   }
@@ -1952,9 +1978,9 @@ void rst(uint8_t instruction)
 {
   pc += 1;
   stack_ptr -= 1;
-  writeMemory(stack_ptr, (uint8_t) pc);
-  stack_ptr -= 1;
   writeMemory(stack_ptr, (uint8_t) (pc >> 8));
+  stack_ptr -= 1;
+  writeMemory(stack_ptr, (uint8_t) pc);
   switch (instruction)
   {
     case RST_0:
@@ -1988,9 +2014,9 @@ void ret()
 {
   uint8_t lower;
   uint8_t higher;
-  higher = readMemory(stack_ptr);
-  stack_ptr += 1;
   lower = readMemory(stack_ptr);
+  stack_ptr += 1;
+  higher = readMemory(stack_ptr);
   stack_ptr += 1;
   pc = (((uint16_t) higher) << 8) | lower;
 }
@@ -2001,9 +2027,9 @@ void retNZ()
   {
     uint8_t lower;
     uint8_t higher;
-    higher = readMemory(stack_ptr);
-    stack_ptr += 1;
     lower = readMemory(stack_ptr);
+    stack_ptr += 1;
+    higher = readMemory(stack_ptr);
     stack_ptr += 1;
     sleepCycles(20);
     pc = (((uint16_t) higher) << 8) | lower;
@@ -2021,9 +2047,9 @@ void retZ()
   {
     uint8_t lower;
     uint8_t higher;
-    higher = readMemory(stack_ptr);
-    stack_ptr += 1;
     lower = readMemory(stack_ptr);
+    stack_ptr += 1;
+    higher = readMemory(stack_ptr);
     stack_ptr += 1;
     sleepCycles(20);
     pc = (((uint16_t) higher) << 8) | lower;
@@ -2041,9 +2067,9 @@ void retC()
   {
     uint8_t lower;
     uint8_t higher;
-    higher = readMemory(stack_ptr);
-    stack_ptr += 1;
     lower = readMemory(stack_ptr);
+    stack_ptr += 1;
+    higher = readMemory(stack_ptr);
     stack_ptr += 1;
     sleepCycles(20);
     pc = (((uint16_t) higher) << 8) | lower;
@@ -2061,9 +2087,9 @@ void retNC()
   {
     uint8_t lower;
     uint8_t higher;
-    higher = readMemory(stack_ptr);
-    stack_ptr += 1;
     lower = readMemory(stack_ptr);
+    stack_ptr += 1;
+    higher = readMemory(stack_ptr);
     stack_ptr += 1;
     sleepCycles(20);
     pc = (((uint16_t) higher) << 8) | lower;
@@ -2079,9 +2105,9 @@ void reti()
 {
   uint8_t lower;
   uint8_t higher;
-  higher = readMemory(stack_ptr);
-  stack_ptr += 1;
   lower = readMemory(stack_ptr);
+  stack_ptr += 1;
+  higher = readMemory(stack_ptr);
   stack_ptr += 1;
   pc = (((uint16_t) higher) << 8) | lower;
   ei();

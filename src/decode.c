@@ -4,6 +4,7 @@
 #include "opcode.h"
 #include "execute.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 int decodeAndExecuteInstruction(uint8_t instruction)
 {
@@ -350,18 +351,22 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       return SUCCESS;
     case RLCA:
       rlc(&a_reg, 0);
+      flags &= 0x10;
       sleepCycles(RLCA_CYCLES);
       return SUCCESS;
     case RLA:
       rl(&a_reg, 0);
+      flags &= 0x10;
       sleepCycles(RLA_CYCLES);
       return SUCCESS;
     case RRCA:
       rrc(&a_reg, 0);
+      flags &= 0x10;
       sleepCycles(RRCA_CYCLES);
       return SUCCESS;
     case RRA:
       rr(&a_reg, 0);
+      flags &= 0x10;
       sleepCycles(RRA_CYCLES);
       return SUCCESS;
     ////////////////////////////////////////////////////////////////////////////
@@ -387,6 +392,7 @@ int decodeAndExecuteInstruction(uint8_t instruction)
       sleepCycles(ALU_16_REG_CYCLES);
       return SUCCESS;
     default:
+      printf("ILLEGAL OPCODE, MAY BE BUG IN EMULATOR!\n");
       return -1;
   }
 }
@@ -413,10 +419,10 @@ int decodeAndExecuteCB(uint8_t instruction)
       arg = &e_reg;
       break;
     case 0x4: case 0xc:
-      arg = &l_reg;
+      arg = &h_reg;
       break;
     case 0x5: case 0xd:
-      arg = &h_reg;
+      arg = &l_reg;
       break;
     case 0x6: case 0xe:
       addr = (((uint16_t) h_reg) << 8) | l_reg;
