@@ -11,6 +11,7 @@
 
 // Definitions for CPU data structures
 //
+//
 
 // Registers
 uint8_t a_reg = 0;
@@ -193,6 +194,27 @@ int writeMemory(uint16_t addr, uint8_t data)
   {
     if (addr == DMA_REG)
       executeDMA(data);
+    // Certain registers need masks, see pandocs
+    else if (addr == 0xff00)
+    {
+      IO_PORTS[0x0] &= ~0x30;
+      IO_PORTS[0x0] |= data & 0x30;
+    }
+    else if (addr == 0xff02)
+    {
+      IO_PORTS[0x2] &= 0x7E;
+      IO_PORTS[0x2] |= data & ~0x7E;
+    }
+    else if (addr == 0xff07)
+    {
+      IO_PORTS[0x2] &= 0xF8;
+      IO_PORTS[0x2] |= data & ~0xF8;
+    }
+    else if (addr == 0xff0f)
+    {
+      IO_PORTS[0xf] &= 0xE0;
+      IO_PORTS[0xf] |= data & ~0xE0;
+    }
     else if (addr == 0xff02 && data == 0x81)
       printf("%c", IO_PORTS[0x1]);
     else if (addr == 0xff44)
@@ -240,10 +262,12 @@ int writeMemory(uint16_t addr, uint8_t data)
 
 void GBStartUp()
 {
-  IO_PORTS[0x04] = 0xAB;
+  IO_PORTS[0x00] = 0xFF;
+  IO_PORTS[0x02] = 0xFF;
+  IO_PORTS[0x04] = 0;
   IO_PORTS[0x05] = 0;
   IO_PORTS[0x06] = 0;
-  IO_PORTS[0x07] = 0;
+  IO_PORTS[0x07] = 0xF8;
   IO_PORTS[0x10] = 0x80;
   IO_PORTS[0x11] = 0xBF;
   IO_PORTS[0x12] = 0xF3;
@@ -335,12 +359,12 @@ void startExecutionGB()
         sleepCycles(4);
       }
       doGraphics();
-      if (cycle_counter % 50000)
+      if (cycle_counter % 200000)
         doEventLoop();
       doInterrupts();
     }
     elapsed = SDL_GetTicks() - elapsed;
-    // printf("Elapsed: %d\n", elapsed);
+    printf("Elapsed: %d\n", elapsed);
     last_cycle_count = cycle_counter;
     if (1000 - (int) elapsed > 0)
       SDL_Delay(1000 - elapsed);
@@ -364,7 +388,82 @@ void doEventLoop()
     switch(event.type)
     {
       case SDL_QUIT:
-        exit(0);
+        program_state = OFF;
+        break;
+      case SDL_KEYDOWN:
+        switch(event.key.keysym.sym)
+        {
+          case SDLK_LEFT:
+            if (!(IO_PORTS[0] & 0x10))
+              IO_PORTS[0] &= ~2;
+            break;
+          case SDLK_RIGHT:
+            if (!(IO_PORTS[0] & 0x10))
+              IO_PORTS[0] &= ~1;
+            break;
+          case SDLK_UP:
+            if (!(IO_PORTS[0] & 0x10))
+              IO_PORTS[0] &= ~4;
+            break;
+          case SDLK_DOWN:
+            if (!(IO_PORTS[0] & 0x10))
+              IO_PORTS[0] &= ~8;
+            break;
+          case SDLK_x:
+            if (!(IO_PORTS[0] & 0x20))
+              IO_PORTS[0] &= ~1;
+            break;
+          case SDLK_c:
+            if (!(IO_PORTS[0] & 0x20))
+              IO_PORTS[0] &= ~2;
+            break;
+          case SDLK_v:
+            if (!(IO_PORTS[0] & 0x20))
+              IO_PORTS[0] &= ~4;
+            break;
+          case SDLK_b:
+            if (!(IO_PORTS[0] & 0x20))
+              IO_PORTS[0] &= ~8;
+            break;
+        }
+        requestInterrupt(JOYPAD);
+        break;
+      case SDL_KEYUP:
+        switch(event.key.keysym.sym)
+        {
+          case SDLK_LEFT:
+            if (!(IO_PORTS[0] & 0x10))
+              IO_PORTS[0] |= 2;
+            break;
+          case SDLK_RIGHT:
+            if (!(IO_PORTS[0] & 0x10))
+              IO_PORTS[0] |= 1;
+            break;
+          case SDLK_UP:
+            if (!(IO_PORTS[0] & 0x10))
+              IO_PORTS[0] |= 4;
+            break;
+          case SDLK_DOWN:
+            if (!(IO_PORTS[0] & 0x10))
+              IO_PORTS[0] |= 8;
+            break;
+          case SDLK_x:
+            if (!(IO_PORTS[0] & 0x20))
+              IO_PORTS[0] |= 1;
+            break;
+          case SDLK_c:
+            if (!(IO_PORTS[0] & 0x20))
+              IO_PORTS[0] |= 2;
+            break;
+          case SDLK_v:
+            if (!(IO_PORTS[0] & 0x20))
+              IO_PORTS[0] |= 4;
+            break;
+          case SDLK_b:
+            if (!(IO_PORTS[0] & 0x20))
+              IO_PORTS[0] |= 8;
+            break;
+        }
         break;
     }
   }

@@ -140,7 +140,7 @@ void doGraphics()
       }
       break;
     case V_BLANK:
-      if (mode_count >= 456) //TODO MAGIC VALUE
+      if (mode_count >= 456) 
       {
           mode_count = 0;
           IO_PORTS[0x44]++;
@@ -220,21 +220,21 @@ void renderBG()
   for (int i = 0; i < 160; ++i)
   {
     // X coordinate of the tile
-    uint8_t tileX = (((i + scrollX) / 8) % 32);
+    uint8_t tileX = (uint8_t)(((i + scrollX) / 8) % 32);
     // Read the tile number
     uint8_t tile_no = readMemory((bg_tile_nums + (tileY * 32) + tileX));
     uint16_t final_addr;
     if (bg_tile_addr == 0x8000)
-      final_addr = (bg_tile_addr + (tile_no * 16));
+      final_addr = (uint16_t)(bg_tile_addr + (tile_no * 16));
     else
-      final_addr = (bg_tile_addr + ((int8_t)(tile_no) * 16));
+      final_addr = (uint16_t)(bg_tile_addr + ((int8_t)(tile_no) * 16));
     // Lines are 2 bytes
     final_addr += (uint16_t) (offsetY) * 2;
     // Read the bytes
     uint8_t low = readMemory(final_addr);
-    uint8_t high = readMemory(final_addr + 1);
+    uint8_t high = readMemory((uint16_t)(final_addr + 1));
 
-    uint8_t bit_no = (7 - ((scrollX + i) % 8));
+    uint8_t bit_no = (uint8_t)(7 - ((scrollX + i) % 8));
     uint8_t bit_low = (low & (1 << bit_no)) ? 0x1 : 0x00;
     uint8_t bit_high = (high & (1 << bit_no)) ? 0x2 : 0x00;
     uint32_t color = palette[bit_low + bit_high];
@@ -300,19 +300,22 @@ void renderSprites()
   uint8_t ly = readMemory(0xff44);
   uint8_t palette_1 = readMemory(0xff48);
   uint8_t palette_2 = readMemory(0xff49);
+  uint8_t pallete_data = readMemory(0xff47);
+  uint32_t palette_0 = getColor(pallete_data & 0x3);
   uint8_t palette;
   // Loop through each sprite in OAM
   for (int i = 39; i >= 0; --i)
   {
     uint16_t oam_base = 0xfe00;
     uint16_t addr_base = 0x8000;
+    uint8_t spr_sz = 16;
     // Sprites occupy 4 bytes
     uint16_t sprite_addr = (i * 4) + oam_base;
     uint8_t spriteY = readMemory(sprite_addr);
     uint8_t sprite_height = (lcdc & 0x4) ? 16 : 8;
 
     int y = spriteY - 16;
-    if ((y <= ly) && ((y + sprite_height) > ly))
+    if ((y <= ly) && ((y + (int)sprite_height) > ly))
     {
       uint8_t spriteX = readMemory(sprite_addr + 1);
       uint8_t sprite_tile_no = readMemory(sprite_addr + 2);
@@ -328,7 +331,8 @@ void renderSprites()
         getColor((palette >> 4) & 0x3),
         getColor((palette >> 6) & 0x3)
       };
-      uint16_t tile_addr = addr_base + (sprite_tile_no * 16);
+      uint8_t tile_off = sprite_tile_no * spr_sz;
+      uint16_t tile_addr = addr_base + tile_off;
       uint8_t offsetY = (sprite_attr & 0x40) ? ((sprite_height - 1) - (ly - y)):
         (ly - y);
       tile_addr += offsetY * 2;
@@ -341,7 +345,7 @@ void renderSprites()
         if (pixel_x >= 0 && pixel_x < 160)
         {
           uint8_t bit_no = (sprite_attr & 0x20) ? j : (7 - j);
-          uint8_t color_val = 0x0;
+          uint8_t color_val = 0;
           if (high & (1 << bit_no))
             color_val |= 0x2;
           if (low & (1 << bit_no))
@@ -349,8 +353,11 @@ void renderSprites()
           int final_color = paletteArray[color_val];
           if (final_color)
           {
-            int array_index = (ly * 160) + i;
-            framebuffer[array_index] = final_color;
+            int array_index = (ly * 160) + pixel_x;
+            if (!(sprite_attr & 0x80) || framebuffer[array_index] == palette_0)
+            {
+              framebuffer[array_index] = final_color;
+            }
           }
         }
       }
@@ -364,6 +371,7 @@ void renderScanline()
   renderBG();
   if (lcdc & 0x20)
     renderWindow();
-  renderSprites();
+  if (lcdc & 0x2)
+    renderSprites();
 }
 
