@@ -197,8 +197,8 @@ int writeMemory(uint16_t addr, uint8_t data)
     // Certain registers need masks, see pandocs
     else if (addr == 0xff00)
     {
-      IO_PORTS[0x0] &= ~0x30;
-      IO_PORTS[0x0] |= data & 0x30;
+      IO_PORTS[0x0] &= 0x30;
+      IO_PORTS[0x0] |= data & ~0x30;
     }
     else if (addr == 0xff02)
     {
