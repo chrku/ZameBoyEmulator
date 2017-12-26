@@ -266,6 +266,7 @@ void GBStartUp()
   IO_PORTS[0x41] = 0x85;
   IO_PORTS[0x42] = 0;
   IO_PORTS[0x43] = 0;
+  IO_PORTS[0x44] = 0;
   IO_PORTS[0x45] = 0;
   IO_PORTS[0x47] = 0xFC;
   IO_PORTS[0x48] = 0xFF;
@@ -275,7 +276,7 @@ void GBStartUp()
   IO_PORTS[0xf] = 0xe1;
   ier = 0;
   imf = 0;
-  cycle_counter = 0x165ABCC;
+  cycle_counter = 0x0;
   return;
 }
 
@@ -341,8 +342,8 @@ void startExecutionGB()
     elapsed = SDL_GetTicks() - elapsed;
     // printf("Elapsed: %d\n", elapsed);
     last_cycle_count = cycle_counter;
-    // if (1000 - (int) timer > 0)
-    //  SDL_Delay(1000 - timer);
+    if (1000 - (int) elapsed > 0)
+      SDL_Delay(1000 - elapsed);
   }
 }
 

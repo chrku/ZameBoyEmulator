@@ -42,7 +42,8 @@ typedef enum _graphics_state_
 #define BG_ADDR_2 0x9800
 
 #define SCREEN_WIDTH 160
-#define SCREEN_HEIGHT 144
+#define SCREEN_HEIGHT 153
+
 #define CHANNELS 4
 
 // Timings:
