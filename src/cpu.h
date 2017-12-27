@@ -23,7 +23,7 @@
 // Size of the ROM memory segment
 #define GB_ROM_SIZE 0x200000
 // Cartridge RAM
-#define CARTRIDGE_ROM_SIZE 8192
+#define CARTRIDGE_ROM_SIZE 32768
 // Working RAM
 #define WORK_RAM_SIZE 127
 
@@ -50,6 +50,8 @@
 // MEMORY MAP //////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+#define CART_FIXED 0x4000
+#define CART_BANKED 0x8000
 #define CART_LIMIT_GB 0x7fff
 #define INTERNAL_RAM_LOWER 0xc000
 #define INTERNAL_RAM_UPPER 0xdfff
@@ -98,6 +100,13 @@ extern uint64_t cycle_counter;
 extern uint64_t timer_freq;
 extern int64_t current_timer_value;
 extern uint64_t divider_time;
+
+// Memory bank controller
+extern uint8_t mbc;
+extern uint8_t current_memory_bank;
+extern uint8_t current_ram_bank;
+extern uint8_t mbc_mode;
+extern uint8_t ram_enable;
 
 // IO Registers and IER
 

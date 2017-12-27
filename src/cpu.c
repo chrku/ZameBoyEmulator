@@ -29,7 +29,12 @@ int halted = 0;
 // IO Registers
 uint8_t ier = 0;
 uint8_t imf = 0;
+uint8_t mbc = 0;
+uint8_t current_memory_bank = 1;
 uint8_t change_interrupt = 0;
+uint8_t current_ram_bank = 0;
+uint8_t mbc_mode = 0;
+uint8_t ram_enable = 0;
 
 // Program counter
 uint16_t pc = START_LOCATION;
@@ -90,9 +95,13 @@ uint8_t readMemory(uint16_t addr)
   printf("Reading address %hx\n", addr);
 #endif
   // Adresses from 0x
-  if (addr <= CART_LIMIT_GB)
+  if (addr <= CART_FIXED)
   {
     return ROM[addr];
+  }
+  else if (addr <= CART_BANKED)
+  {
+    return ROM[(addr - 0x4000) + (0x4000 * current_memory_bank)];
   }
   // Adresses to RAM
   else if (addr >= INTERNAL_RAM_LOWER && addr <= INTERNAL_RAM_UPPER)
@@ -110,7 +119,7 @@ uint8_t readMemory(uint16_t addr)
   }
   else if (addr >= CART_RAM_LOWER && addr <= CART_RAM_UPPER)
   {
-    return EXT_RAM[addr - CART_RAM_LOWER];
+    return EXT_RAM[addr - CART_RAM_LOWER + (0x2000 * current_ram_bank)];
   }
   else if (addr >= ECHO_LOWER && addr <= ECHO_UPPER)
   {
@@ -131,6 +140,11 @@ uint8_t readMemory(uint16_t addr)
   {
     if (addr == DMA_REG)
       return 0xff;
+    if (addr == 0xff00)
+    {
+      doEventLoop();
+      return IO_PORTS[0xff00];
+    }
     else
       return IO_PORTS[addr - IO_REGS_LOWER];
   }
@@ -139,7 +153,7 @@ uint8_t readMemory(uint16_t addr)
     return ier;
   }
   // TODO: Implement the rest of the memory map
-  printf("ERROR\n");
+  printf("ERROR %d\n", addr);
   exit(-1);
   return 0;
 }
@@ -149,9 +163,54 @@ int writeMemory(uint16_t addr, uint8_t data)
 #ifdef DEBUG
   printf("Writing address %hx\n", addr);
 #endif
-  if (addr <= CART_LIMIT_GB)
+  if (addr <= CART_BANKED)
   {
-    return WRITE_ERROR;
+    if (mbc == 1)
+    {
+      if (addr <= 0x1fff)
+      {
+        if ((data & 0xf) == 0xA)
+          ram_enable = 1;
+        else
+          ram_enable = 0;
+      }
+      else if (addr > 0x1fff && addr <= 0x3fff)
+      {
+        data &= 0x1f;
+        current_memory_bank &= ~0x1f;
+        current_memory_bank |= data;
+        if (current_memory_bank == 0)
+          current_memory_bank = 1;
+      }
+      else if (addr > 0x3fff && addr <= 0x5fff)
+      {
+        if (mbc_mode == 0)
+        {
+          data &= ~0x1f;
+          current_memory_bank &= 0x1f;
+          current_memory_bank |= data;
+        }
+        else
+        {
+          current_ram_bank = data & 0x3;
+        }
+      }
+      else if (addr > 0x5fff && addr <= 0x7fff)
+      {
+        data &= 0x1;
+        if (data)
+        {
+          mbc_mode = 1;
+        }
+        else
+        {
+          current_ram_bank = 0;
+          mbc_mode = 0;
+        }
+      }
+    }
+    else
+      return WRITE_ERROR;
   }
   else if (addr >= INTERNAL_RAM_LOWER && addr <= INTERNAL_RAM_UPPER)
   {
@@ -170,7 +229,7 @@ int writeMemory(uint16_t addr, uint8_t data)
   }
   else if (addr >= CART_RAM_LOWER && addr <= CART_RAM_UPPER)
   {
-    EXT_RAM[addr - CART_RAM_LOWER] = data;
+    EXT_RAM[addr - CART_RAM_LOWER + (0x2000 * current_ram_bank)] = data;
     return SUCCESS;
   }
   else if (addr >= ECHO_LOWER && addr <= ECHO_UPPER)
@@ -197,8 +256,8 @@ int writeMemory(uint16_t addr, uint8_t data)
     // Certain registers need masks, see pandocs
     else if (addr == 0xff00)
     {
-      IO_PORTS[0x0] &= 0x30;
-      IO_PORTS[0x0] |= data & ~0x30;
+      IO_PORTS[0x0] &= ~0x30;
+      IO_PORTS[0x0] |= data & 0x30;
     }
     else if (addr == 0xff02)
     {
@@ -301,7 +360,22 @@ void GBStartUp()
   ier = 0;
   imf = 0;
   cycle_counter = 0x0;
-  return;
+  // Set MBC mode
+  switch(readMemory(0x147))
+  {
+    case 0:
+      mbc = 0;
+      break;
+    case 1:
+      mbc = 1;
+      break;
+    case 2:
+      mbc = 2;
+      break;
+    case 3:
+      mbc = 2;
+      break;
+  }
 }
 
 void startExecutionGB()
@@ -318,6 +392,7 @@ void startExecutionGB()
   initMemory();
   initRegisters();
   GBStartUp();
+  printf("MBC: %d\n", mbc);
 
   // If debug macro is enabled, print the registers
 #ifdef DEBUG
@@ -327,7 +402,7 @@ void startExecutionGB()
   while (program_state == RUNNING)
   {
     elapsed = SDL_GetTicks();
-    while (cycle_counter - last_cycle_count <= 4194304)
+    while (cycle_counter - last_cycle_count <= 69905)
     {
       if (pc == break_on) 
         debug = true;
@@ -359,15 +434,15 @@ void startExecutionGB()
         sleepCycles(4);
       }
       doGraphics();
-      if (cycle_counter % 200000)
-        doEventLoop();
       doInterrupts();
     }
     elapsed = SDL_GetTicks() - elapsed;
-    printf("Elapsed: %d\n", elapsed);
+    doEventLoop();
+    //printf("Elapsed: %d\n", elapsed);
+    //printf("FF00 Value: %hhx\n", IO_PORTS[0]);
     last_cycle_count = cycle_counter;
-    if (1000 - (int) elapsed > 0)
-      SDL_Delay(1000 - elapsed);
+    if (63 - (int) elapsed > 0)
+      SDL_Delay(63 - elapsed);
   }
 }
 
@@ -396,6 +471,7 @@ void doEventLoop()
           case SDLK_LEFT:
             if (!(IO_PORTS[0] & 0x10))
               IO_PORTS[0] &= ~2;
+            printf("LEFT\n");
             break;
           case SDLK_RIGHT:
             if (!(IO_PORTS[0] & 0x10))
