@@ -86,7 +86,7 @@ void initMemory()
   memset(CPU_RAM, 0, WORK_RAM_SIZE);
   memset(EXT_RAM, 0, GB_RAM_SIZE);
   memset(OAM, 0, OAM_SIZE);
-  memset(IO_PORTS, 0, IO_SIZE);
+  memset(IO_PORTS, 0xff, IO_SIZE);
 }
 
 uint8_t readMemory(uint16_t addr)
@@ -264,15 +264,40 @@ int writeMemory(uint16_t addr, uint8_t data)
       IO_PORTS[0x2] &= 0x7E;
       IO_PORTS[0x2] |= data & ~0x7E;
     }
-    else if (addr == 0xff07)
-    {
-      IO_PORTS[0x2] &= 0xF8;
-      IO_PORTS[0x2] |= data & ~0xF8;
-    }
     else if (addr == 0xff0f)
     {
       IO_PORTS[0xf] &= 0xE0;
       IO_PORTS[0xf] |= data & ~0xE0;
+    }
+    else if (addr == 0xff10)
+    {
+      IO_PORTS[0x10] &= 0x80;
+      IO_PORTS[0x10] |= data & ~0x80;
+    }
+    else if (addr == 0xff1a)
+    {
+      IO_PORTS[0x1a] &= ~0x80;
+      IO_PORTS[0x1a] |= data & 0x80;
+    }
+    else if (addr == 0xff1c)
+    {
+      IO_PORTS[0x1c] &= ~0x60;
+      IO_PORTS[0x1c] |= data & 0x60;
+    }
+    else if (addr == 0xff20)
+    {
+      IO_PORTS[0x20] &= 0xC0;
+      IO_PORTS[0x20] |= data & ~0xC0;
+    }
+    else if (addr == 0xff23)
+    {
+      IO_PORTS[0x23] &= ~0xC0;
+      IO_PORTS[0x23] |= data & 0xC0;
+    }
+    else if (addr == 0xff26)
+    {
+      IO_PORTS[0x26] &= 0x70;
+      IO_PORTS[0x26] |= data & ~0x70;
     }
     else if (addr == 0xff02 && data == 0x81)
       printf("%c", IO_PORTS[0x1]);
@@ -282,16 +307,14 @@ int writeMemory(uint16_t addr, uint8_t data)
       IO_PORTS[0x04] = 0;
     else if (addr == 0xff41)
     {
-      uint8_t stat_val = IO_PORTS[0x41];
-      uint8_t orig = stat_val & 7;
-      IO_PORTS[0x41] = data;
-      IO_PORTS[0x41] &= ~7;
-      IO_PORTS[0x41] |= orig;
+      IO_PORTS[0x41] &= ~0x78;
+      IO_PORTS[0x41] |= data & 0x78;
     }
     else if (addr == 0xff07)
     {
       uint8_t tmc = IO_PORTS[0x07];
-      IO_PORTS[0x07] = data;
+      IO_PORTS[0x7] &= ~0x7;
+      IO_PORTS[0x7] |= data & 0x7;
       uint8_t new_tmc = IO_PORTS[0x07];
       uint8_t old_frq = (tmc & 0x1) | (tmc & 0x2);
       uint8_t new_frq = (new_tmc & 0x1) | (new_tmc & 0x2);
@@ -306,8 +329,6 @@ int writeMemory(uint16_t addr, uint8_t data)
         }
       }
     }
-    else
-      IO_PORTS[addr - IO_REGS_LOWER] = data;
     return SUCCESS;
   }
   else if (addr == 0xffff)
