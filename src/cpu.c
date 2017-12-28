@@ -26,6 +26,16 @@ uint64_t cycle_counter = 0;
 int halted = 0;
 
 
+// Joypad
+static int left_b = 1;
+static int right_b = 1;
+static int up_b = 1;
+static int down_b = 1;
+static int a_b = 1;
+static int b_b = 1;
+static int select_b = 1;
+static int start_b = 1;
+
 // IO Registers
 uint8_t ier = 0;
 uint8_t imf = 0;
@@ -89,6 +99,33 @@ void initMemory()
   memset(IO_PORTS, 0xff, IO_SIZE);
 }
 
+void updateJoypad()
+{
+  // Update button states
+  doEventLoop();
+
+  // Get select mask
+  uint8_t select = IO_PORTS[0] & 0x30;
+  
+  switch(select)
+  {
+    // Both set to one
+    case 0x30:
+      // Set everything unpressed
+      IO_PORTS[0] |= 0xf;
+      break;
+    // Lower bit set to null := direction keys
+    case 0x20:
+      IO_PORTS[0] &= 0xf0;
+      IO_PORTS[0] |= ((down_b << 3) | (up_b << 2) | (left_b << 1) | right_b);
+      break;
+    case 0x10:
+      IO_PORTS[0] &= 0xf0;
+      IO_PORTS[0] |= ((start_b << 3) | (select_b << 2) | (b_b << 1) | a_b);
+      break;
+  }
+}
+
 uint8_t readMemory(uint16_t addr)
 {
 #ifdef DEBUG
@@ -142,8 +179,8 @@ uint8_t readMemory(uint16_t addr)
       return 0xff;
     if (addr == 0xff00)
     {
-      doEventLoop();
-      return IO_PORTS[0xff00];
+      updateJoypad();
+      return IO_PORTS[0];
     }
     else
       return IO_PORTS[addr - IO_REGS_LOWER];
@@ -304,7 +341,18 @@ int writeMemory(uint16_t addr, uint8_t data)
     else if (addr == 0xff44)
       IO_PORTS[0x44] = 0;
     else if (addr == 0xff04)
+    {
       IO_PORTS[0x04] = 0;
+      uint8_t tmc = IO_PORTS[0x07];
+      uint8_t new_frq = (tmc & 0x1) | (tmc & 0x2);
+      switch(new_frq)
+      {
+        case 0: current_timer_value = 1024; timer_freq = 4096; break;
+        case 1: current_timer_value = 16; timer_freq = 262144; break;
+        case 2: current_timer_value = 64; timer_freq = 65536; break;
+        case 3: current_timer_value = 256; timer_freq = 16382; break;
+      }
+    }
     else if (addr == 0xff41)
     {
       IO_PORTS[0x41] &= ~0x78;
@@ -328,6 +376,15 @@ int writeMemory(uint16_t addr, uint8_t data)
           case 3: current_timer_value = 256; timer_freq = 16382; break;
         }
       }
+    }
+    else if (addr == 0xff03 || addr == 0xff08 || addr == 0xff09 || addr == 0xff0a
+        || addr == 0xff0b || addr == 0xff0c || addr == 0xff0d || addr == 0xff0e
+        || addr == 0xff15 || addr == 0xff1f || addr == 0xff27 || addr == 0xff28
+        || addr == 0xff29 || (addr >= 0xff4c && addr <= 0xff7f))
+      return SUCCESS;
+    else
+    {
+      IO_PORTS[addr - IO_REGS_LOWER] = data;
     }
     return SUCCESS;
   }
@@ -490,37 +547,28 @@ void doEventLoop()
         switch(event.key.keysym.sym)
         {
           case SDLK_LEFT:
-            if (!(IO_PORTS[0] & 0x10))
-              IO_PORTS[0] &= ~2;
-            printf("LEFT\n");
+            left_b = 0;
             break;
           case SDLK_RIGHT:
-            if (!(IO_PORTS[0] & 0x10))
-              IO_PORTS[0] &= ~1;
+            right_b = 0;
             break;
           case SDLK_UP:
-            if (!(IO_PORTS[0] & 0x10))
-              IO_PORTS[0] &= ~4;
+            up_b = 0;
             break;
           case SDLK_DOWN:
-            if (!(IO_PORTS[0] & 0x10))
-              IO_PORTS[0] &= ~8;
+            down_b = 0;
             break;
           case SDLK_x:
-            if (!(IO_PORTS[0] & 0x20))
-              IO_PORTS[0] &= ~1;
+            a_b = 0;
             break;
           case SDLK_c:
-            if (!(IO_PORTS[0] & 0x20))
-              IO_PORTS[0] &= ~2;
+            b_b = 0;
             break;
           case SDLK_v:
-            if (!(IO_PORTS[0] & 0x20))
-              IO_PORTS[0] &= ~4;
+            start_b = 0;
             break;
           case SDLK_b:
-            if (!(IO_PORTS[0] & 0x20))
-              IO_PORTS[0] &= ~8;
+            select_b = 0;
             break;
         }
         requestInterrupt(JOYPAD);
@@ -529,36 +577,28 @@ void doEventLoop()
         switch(event.key.keysym.sym)
         {
           case SDLK_LEFT:
-            if (!(IO_PORTS[0] & 0x10))
-              IO_PORTS[0] |= 2;
+            left_b = 1;
             break;
           case SDLK_RIGHT:
-            if (!(IO_PORTS[0] & 0x10))
-              IO_PORTS[0] |= 1;
+            right_b = 1;
             break;
           case SDLK_UP:
-            if (!(IO_PORTS[0] & 0x10))
-              IO_PORTS[0] |= 4;
+            up_b = 1;
             break;
           case SDLK_DOWN:
-            if (!(IO_PORTS[0] & 0x10))
-              IO_PORTS[0] |= 8;
+            down_b = 1;
             break;
           case SDLK_x:
-            if (!(IO_PORTS[0] & 0x20))
-              IO_PORTS[0] |= 1;
+            a_b = 1;
             break;
           case SDLK_c:
-            if (!(IO_PORTS[0] & 0x20))
-              IO_PORTS[0] |= 2;
+            b_b = 1;
             break;
           case SDLK_v:
-            if (!(IO_PORTS[0] & 0x20))
-              IO_PORTS[0] |= 4;
+            start_b = 1;
             break;
           case SDLK_b:
-            if (!(IO_PORTS[0] & 0x20))
-              IO_PORTS[0] |= 8;
+            select_b = 1;
             break;
         }
         break;
@@ -588,8 +628,8 @@ void doInterrupts()
     writeMemory(stack_ptr, (uint8_t) (pc >> 8));
     stack_ptr -= 1; 
     writeMemory(stack_ptr, (uint8_t) pc);
-    // I think its twelve??!!
-    sleepCycles(12);
+    // I think its sixteen??!!
+    sleepCycles(16);
     if ((enabled_interrupts & 0x1) && (int_flags & 0x1))
     {
       IO_PORTS[0x0f] &= ~0x1;
