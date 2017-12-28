@@ -289,7 +289,10 @@ int writeMemory(uint16_t addr, uint8_t data)
   else if (addr >= IO_REGS_LOWER && addr <= IO_REGS_UPPER)
   {
     if (addr == DMA_REG)
+    {
+      IO_PORTS[0x46] = data;
       executeDMA(data);
+    }
     // Certain registers need masks, see pandocs
     else if (addr == 0xff00)
     {
@@ -393,7 +396,8 @@ int writeMemory(uint16_t addr, uint8_t data)
     ier = data;
     return SUCCESS;
   }
-  // TODO: Implement the rest of the memory map
+  printf("Invalid write, addr: %hx\n", addr);
+  exit(-1);
   return 0;
 }
 
@@ -536,7 +540,7 @@ void startExecutionGB()
 
 void executeDMA(uint8_t data)
 {
-  uint16_t addr = data << 8;
+  uint16_t addr = ((uint16_t) data) << 8;
   for (int i = 0; i < 160; ++i)
   {
     writeMemory(0xfe00 + i, readMemory(addr + i));
