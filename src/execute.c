@@ -1414,13 +1414,13 @@ void stop()
 
 void ei()
 {
-  imf = 1;
+  change_interrupt = 1;
   pc += CB_ARGLEN;
 }
 
 void di()
 {
-  imf = 0;
+  change_interrupt = 2;
   pc += CB_ARGLEN;
 }
 

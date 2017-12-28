@@ -502,6 +502,16 @@ void startExecutionGB()
         }
         printRegisters();
       }
+      if (change_interrupt == 1)
+      {
+        change_interrupt = 0;
+        imf = 1;
+      }
+      if (change_interrupt == 2)
+      {
+        change_interrupt = 0;
+        imf = 0;
+      }
       if (!halted)
       {
         instruction = readMemory(pc);
