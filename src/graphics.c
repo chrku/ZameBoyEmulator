@@ -90,7 +90,7 @@ void doGraphics()
         mode = A_VRAM;
         stat_value = readMemory(STAT);
         stat_value = (stat_value & ~0x3) | 0x2;
-        writeMemory(STAT, stat_value);
+        IO_PORTS[0x41] = stat_value;
         mode_count = 0;
       }
       break;
@@ -104,7 +104,7 @@ void doGraphics()
         stat_value = (stat_value & ~0x3);
         if (stat_value & 0x8)
           requestInterrupt(LCD_STAT);
-        writeMemory(STAT, stat_value);
+        IO_PORTS[0x41] = stat_value;
         mode_count = 0;
       }
       break;
@@ -125,7 +125,7 @@ void doGraphics()
           requestInterrupt(BLANK);
           stat_value = readMemory(STAT);
           stat_value = (stat_value & ~0x3) | 1;
-          writeMemory(STAT, stat_value);
+          IO_PORTS[0x41] = stat_value;
         }
         else
         {
@@ -133,7 +133,7 @@ void doGraphics()
           mode = A_OAM;
           stat_value = readMemory(STAT);
           stat_value = (stat_value & ~0x3) | 2;
-          writeMemory(STAT, stat_value);
+          IO_PORTS[0x41] = stat_value;
           if (stat_value & 0x20)
             requestInterrupt(LCD_STAT);
         }
@@ -150,7 +150,7 @@ void doGraphics()
             IO_PORTS[0x44] = 0;
             stat_value = readMemory(STAT);
             stat_value = (stat_value & ~0x3) | 2;
-            writeMemory(STAT, stat_value);
+            IO_PORTS[0x41] = stat_value;
             if (stat_value & 0x20)
               requestInterrupt(LCD_STAT);
           }
@@ -308,17 +308,17 @@ void renderSprites()
   {
     uint16_t oam_base = 0xfe00;
     uint16_t addr_base = 0x8000;
-    uint8_t spr_sz = 16;
+    uint16_t spr_sz = 16;
     // Sprites occupy 4 bytes
     uint16_t sprite_addr = (i * 4) + oam_base;
     uint8_t spriteY = readMemory(sprite_addr);
-    uint8_t sprite_height = (lcdc & 0x4) ? 16 : 8;
+    int sprite_height = (lcdc & 0x4) ? 16 : 8;
 
     int y = spriteY - 16;
     if ((y <= ly) && ((y + (int)sprite_height) > ly))
     {
       uint8_t spriteX = readMemory(sprite_addr + 1);
-      uint8_t sprite_tile_no = readMemory(sprite_addr + 2);
+      uint16_t sprite_tile_no = readMemory(sprite_addr + 2);
       uint8_t sprite_attr = readMemory(sprite_addr + 3);
       if (sprite_height == 16)
         sprite_tile_no &= 0xFE;
@@ -331,7 +331,7 @@ void renderSprites()
         getColor((palette >> 4) & 0x3),
         getColor((palette >> 6) & 0x3)
       };
-      uint8_t tile_off = sprite_tile_no * spr_sz;
+      uint16_t tile_off = sprite_tile_no * spr_sz;
       uint16_t tile_addr = addr_base + tile_off;
       uint8_t offsetY = (sprite_attr & 0x40) ? ((sprite_height - 1) - (ly - y)):
         (ly - y);

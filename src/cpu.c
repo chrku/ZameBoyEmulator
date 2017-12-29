@@ -189,9 +189,7 @@ uint8_t readMemory(uint16_t addr)
   {
     return ier;
   }
-  // TODO: Implement the rest of the memory map
-  printf("ERROR %d\n", addr);
-  exit(-1);
+  printf("Invalid read, addr: %d\n", addr);
   return 0;
 }
 
@@ -245,6 +243,7 @@ int writeMemory(uint16_t addr, uint8_t data)
           mbc_mode = 0;
         }
       }
+      return SUCCESS;
     }
     else
       return WRITE_ERROR;
@@ -397,7 +396,6 @@ int writeMemory(uint16_t addr, uint8_t data)
     return SUCCESS;
   }
   printf("Invalid write, addr: %hx\n", addr);
-  exit(-1);
   return 0;
 }
 
@@ -533,15 +531,15 @@ void startExecutionGB()
     //printf("Elapsed: %d\n", elapsed);
     //printf("FF00 Value: %hhx\n", IO_PORTS[0]);
     last_cycle_count = cycle_counter;
-    if (63 - (int) elapsed > 0)
-      SDL_Delay(63 - elapsed);
+    if (16 - (int) elapsed > 0)
+      SDL_Delay(16 - elapsed);
   }
 }
 
 void executeDMA(uint8_t data)
 {
-  uint16_t addr = ((uint16_t) data) << 8;
-  for (int i = 0; i < 160; ++i)
+  uint16_t addr = ((uint16_t) data) * 0x100;
+  for (int i = 0; i <= 0x9f; ++i)
   {
     writeMemory(0xfe00 + i, readMemory(addr + i));
   }
