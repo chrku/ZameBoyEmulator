@@ -70,6 +70,7 @@ void doGraphics()
   {
     if (!off_texture)
     {
+      IO_PORTS[0x41] &= ~0x3;
       memset(framebuffer, 0, SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint32_t));
       SDL_UpdateTexture(texture, NULL, framebuffer, SCREEN_WIDTH * sizeof(uint32_t));
       SDL_RenderClear(renderer);
@@ -375,3 +376,9 @@ void renderScanline()
     renderSprites();
 }
 
+void destroyGraphics()
+{
+  SDL_DestroyTexture(texture);
+  SDL_DestroyRenderer(renderer);
+  SDL_DestroyWindow(window);
+}

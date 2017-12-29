@@ -534,6 +534,7 @@ void startExecutionGB()
     if (16 - (int) elapsed > 0)
       SDL_Delay(16 - elapsed);
   }
+  destroyGraphics();
 }
 
 void executeDMA(uint8_t data)

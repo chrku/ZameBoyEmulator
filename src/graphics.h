@@ -62,6 +62,6 @@ void doGraphics();
 
 void renderScanline();
 
-void destoryGraphics();
+void destroyGraphics();
 
 #endif
