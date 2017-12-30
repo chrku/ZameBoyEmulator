@@ -1,4 +1,4 @@
-# Lameboy Emulator
+# Zameboy Emulator
 Small personal project to create a working gameboy emulator in C.
 
 ## Foreword
