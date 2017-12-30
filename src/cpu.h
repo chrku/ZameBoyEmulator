@@ -50,7 +50,7 @@
 // MEMORY MAP //////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-#define CART_FIXED 0x4000
+#define CART_FIXED 0x3fff
 #define CART_BANKED 0x8000
 #define CART_LIMIT_GB 0x7fff
 #define INTERNAL_RAM_LOWER 0xc000
@@ -103,7 +103,7 @@ extern uint64_t divider_time;
 
 // Memory bank controller
 extern uint8_t mbc;
-extern uint8_t current_memory_bank;
+extern uint32_t current_memory_bank;
 extern uint8_t current_ram_bank;
 extern uint8_t mbc_mode;
 extern uint8_t ram_enable;

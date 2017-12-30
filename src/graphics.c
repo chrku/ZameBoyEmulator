@@ -252,9 +252,9 @@ void renderWindow()
   uint8_t lcdc = readMemory(0xff40);
   uint8_t pallete_data = readMemory(0xff47);
   int x = readMemory(0xff4b) - 7;
-  if (((int)(windowY)- ly) < 0)
+  if (((int) ly - windowY) < 0)
     return;
-  uint16_t winY = windowY - ly;
+  uint16_t winY = ly - windowY;
   // Create the palette
   uint32_t palette[] = {
     getColor(pallete_data & 0x3),

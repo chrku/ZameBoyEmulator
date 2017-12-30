@@ -40,7 +40,7 @@ static int start_b = 1;
 uint8_t ier = 0;
 uint8_t imf = 0;
 uint8_t mbc = 0;
-uint8_t current_memory_bank = 1;
+uint32_t current_memory_bank = 1;
 uint8_t change_interrupt = 0;
 uint8_t current_ram_bank = 0;
 uint8_t mbc_mode = 0;
@@ -136,9 +136,9 @@ uint8_t readMemory(uint16_t addr)
   {
     return ROM[addr];
   }
-  else if (addr <= CART_BANKED)
+  else if (addr > CART_FIXED && addr <= CART_BANKED)
   {
-    return ROM[(addr - 0x4000) + (0x4000 * current_memory_bank)];
+    return ROM[((uint32_t) addr - 0x4000) + (0x4000 * current_memory_bank)];
   }
   // Adresses to RAM
   else if (addr >= INTERNAL_RAM_LOWER && addr <= INTERNAL_RAM_UPPER)
