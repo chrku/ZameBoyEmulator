@@ -488,10 +488,11 @@ void startExecutionGB()
         debug = true;
       if (debug)
       {
+        printf("Welcome to the debug interface. Enter 's' to start the game, 'j' to jump to an address and e to break on an adress!\n");
         char choice = getchar();
         switch (choice)
         {
-          case 'd':
+          case 's':
             debug = false;
             break;
           case 'j':
